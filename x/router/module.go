@@ -16,9 +16,9 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/strangelove-ventures/noble-router/x/router/client/cli"
-	"github.com/strangelove-ventures/noble-router/x/router/keeper"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
+	"github.com/strangelove-ventures/noble/x/router/client/cli"
+	"github.com/strangelove-ventures/noble/x/router/keeper"
+	"github.com/strangelove-ventures/noble/x/router/types"
 )
 
 var (

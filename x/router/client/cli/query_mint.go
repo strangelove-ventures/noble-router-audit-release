@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
+	"github.com/strangelove-ventures/noble/x/router/types"
 )
 
 func CmdListMints() *cobra.Command {
@@ -45,7 +45,7 @@ func CmdListMints() *cobra.Command {
 
 func CmdShowMint() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-mint [source-contract-address] [nonce]",
+		Use:   "show-mint [source-domain-sender] [nonce]",
 		Short: "shows a mint",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -53,7 +53,7 @@ func CmdShowMint() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			sourceContractAddress := args[0]
+			sourceDomainSender := args[0]
 			nonceRaw := args[1]
 			nonce, err := strconv.ParseUint(nonceRaw, 10, 64)
 			if err != nil {
@@ -61,8 +61,8 @@ func CmdShowMint() *cobra.Command {
 			}
 
 			params := &types.QueryGetMintRequest{
-				SourceContractAddress: sourceContractAddress,
-				Nonce:                 nonce,
+				SourceDomainSender: sourceDomainSender,
+				Nonce:              nonce,
 			}
 
 			res, err := queryClient.Mint(context.Background(), params)

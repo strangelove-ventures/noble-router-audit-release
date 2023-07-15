@@ -5,7 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/spf13/cobra"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
+	"github.com/strangelove-ventures/noble/x/router/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

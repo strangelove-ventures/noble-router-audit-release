@@ -11,10 +11,10 @@ import (
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"google.golang.org/grpc/status"
 
-	"github.com/strangelove-ventures/noble-router/x/router/client/cli"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
 	"github.com/strangelove-ventures/noble/testutil/network"
 	"github.com/strangelove-ventures/noble/testutil/nullify"
+	"github.com/strangelove-ventures/noble/x/router/client/cli"
+	"github.com/strangelove-ventures/noble/x/router/types"
 )
 
 func networkWithMintObjects(t *testing.T, n int) (*network.Network, []types.Mint) {
@@ -26,6 +26,7 @@ func networkWithMintObjects(t *testing.T, n int) (*network.Network, []types.Mint
 	for i := 0; i < n; i++ {
 		Mints := types.Mint{
 			SourceDomainSender: strconv.Itoa(i),
+			Nonce:              uint64(i),
 		}
 		nullify.Fill(&Mints)
 		state.Mints = append(state.Mints, Mints)
@@ -44,29 +45,33 @@ func TestShowMint(t *testing.T) {
 		fmt.Sprintf("--%s=json", tmcli.OutputFlag),
 	}
 	for _, tc := range []struct {
-		desc  string
-		idKey string
+		desc               string
+		sourceDomainSender string
+		nonce              string
 
 		args []string
 		err  error
 		obj  types.Mint
 	}{
 		{
-			desc:  "found",
-			idKey: objs[0].SourceDomainSender,
-			args:  common,
-			obj:   objs[0],
+			desc:               "found",
+			sourceDomainSender: objs[0].SourceDomainSender,
+			nonce:              strconv.Itoa(int(objs[0].Nonce)),
+			args:               common,
+			obj:                objs[0],
 		},
 		{
-			desc:  "not found",
-			idKey: "123",
-			args:  common,
-			err:   status.Error(codes.NotFound, "not found"),
+			desc:               "not found",
+			sourceDomainSender: "123",
+			nonce:              "456",
+			args:               common,
+			err:                status.Error(codes.NotFound, "not found"),
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			args := []string{
-				tc.idKey,
+				tc.sourceDomainSender,
+				tc.nonce,
 			}
 			args = append(args, tc.args...)
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdShowMint(), args)

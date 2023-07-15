@@ -3,8 +3,8 @@ package types_test
 import (
 	"testing"
 
-	"github.com/strangelove-ventures/noble-router/x/router/types"
 	"github.com/strangelove-ventures/noble/testutil/sample"
+	"github.com/strangelove-ventures/noble/x/router/types"
 
 	"github.com/stretchr/testify/require"
 )
@@ -20,7 +20,7 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			desc:     "default is valid",
 			genState: types.DefaultGenesis(),
-			valid:    false,
+			valid:    true,
 		},
 		{
 			desc: "valid genesis state",
@@ -42,11 +42,15 @@ func TestGenesisState_Validate(t *testing.T) {
 			valid: true,
 		},
 		{
-			desc: "mints is nil",
+			desc: "duplicated mints",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),
 				InFlightPackets: []types.InFlightPacket{
 					{SourceDomainSender: "0"},
+					{SourceDomainSender: "1"},
+				},
+				Mints: []types.Mint{
+					{SourceDomainSender: "1"},
 					{SourceDomainSender: "1"},
 				},
 				IbcForwards: []types.StoreIBCForwardMetadata{
@@ -57,30 +61,38 @@ func TestGenesisState_Validate(t *testing.T) {
 			valid: false,
 		},
 		{
-			desc: "mints is nil",
+			desc: "duplicated in flight packets",
 			genState: &types.GenesisState{
 				Params: types.DefaultParams(),
 				InFlightPackets: []types.InFlightPacket{
-					{SourceDomainSender: "0"},
+					{SourceDomainSender: "1"},
 					{SourceDomainSender: "1"},
 				},
-				IbcForwards: []types.StoreIBCForwardMetadata{
-					{SourceDomainSender: "0"},
-					{SourceDomainSender: "1"},
-				},
-			},
-			valid: false,
-		},
-		{
-			desc: "ibcforwardmetadata is nil",
-			genState: &types.GenesisState{
-				Params: types.DefaultParams(),
 				Mints: []types.Mint{
 					{SourceDomainSender: "0"},
 					{SourceDomainSender: "1"},
 				},
+				IbcForwards: []types.StoreIBCForwardMetadata{
+					{SourceDomainSender: "0"},
+					{SourceDomainSender: "1"},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicated ibc forwards",
+			genState: &types.GenesisState{
+				Params: types.DefaultParams(),
 				InFlightPackets: []types.InFlightPacket{
 					{SourceDomainSender: "0"},
+					{SourceDomainSender: "1"},
+				},
+				Mints: []types.Mint{
+					{SourceDomainSender: "0"},
+					{SourceDomainSender: "1"},
+				},
+				IbcForwards: []types.StoreIBCForwardMetadata{
+					{SourceDomainSender: "1"},
 					{SourceDomainSender: "1"},
 				},
 			},

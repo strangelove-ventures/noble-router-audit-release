@@ -25,9 +25,11 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // mints are stored so incoming IBC forward messages can check if a mint has been processed
+// @param source_domain_sender
+// @param nonce
 // @param amount
-// @param destinationDomain
-// @param mintRecipient
+// @param destination_domain
+// @param mint_recipient
 type Mint struct {
 	SourceDomainSender string      `protobuf:"bytes,1,opt,name=source_domain_sender,json=sourceDomainSender,proto3" json:"source_domain_sender,omitempty"`
 	Nonce              uint64      `protobuf:"varint,2,opt,name=nonce,proto3" json:"nonce,omitempty"`

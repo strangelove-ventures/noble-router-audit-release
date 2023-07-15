@@ -62,15 +62,15 @@ func request_Query_Mint_0(ctx context.Context, marshaler runtime.Marshaler, clie
 		_   = err
 	)
 
-	val, ok = pathParams["source_contract_address"]
+	val, ok = pathParams["source_domain_sender"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "source_contract_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "source_domain_sender")
 	}
 
-	protoReq.SourceContractAddress, err = runtime.String(val)
+	protoReq.SourceDomainSender, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "source_contract_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "source_domain_sender", err)
 	}
 
 	val, ok = pathParams["nonce"]
@@ -100,15 +100,15 @@ func local_request_Query_Mint_0(ctx context.Context, marshaler runtime.Marshaler
 		_   = err
 	)
 
-	val, ok = pathParams["source_contract_address"]
+	val, ok = pathParams["source_domain_sender"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "source_contract_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "source_domain_sender")
 	}
 
-	protoReq.SourceContractAddress, err = runtime.String(val)
+	protoReq.SourceDomainSender, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "source_contract_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "source_domain_sender", err)
 	}
 
 	val, ok = pathParams["nonce"]
@@ -174,15 +174,15 @@ func request_Query_IBCForward_0(ctx context.Context, marshaler runtime.Marshaler
 		_   = err
 	)
 
-	val, ok = pathParams["source_contract_address"]
+	val, ok = pathParams["source_domain_sender"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "source_contract_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "source_domain_sender")
 	}
 
-	protoReq.SourceContractAddress, err = runtime.String(val)
+	protoReq.SourceDomainSender, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "source_contract_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "source_domain_sender", err)
 	}
 
 	val, ok = pathParams["nonce"]
@@ -212,15 +212,15 @@ func local_request_Query_IBCForward_0(ctx context.Context, marshaler runtime.Mar
 		_   = err
 	)
 
-	val, ok = pathParams["source_contract_address"]
+	val, ok = pathParams["source_domain_sender"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "source_contract_address")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "source_domain_sender")
 	}
 
-	protoReq.SourceContractAddress, err = runtime.String(val)
+	protoReq.SourceDomainSender, err = runtime.String(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "source_contract_address", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "source_domain_sender", err)
 	}
 
 	val, ok = pathParams["nonce"]
@@ -763,11 +763,11 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 var (
 	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"noble", "router", "params"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Mint_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"noble", "router", "mint", "source_contract_address", "nonce"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Mint_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"noble", "router", "mint", "source_domain_sender", "nonce"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Query_Mints_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"noble", "router", "mint"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_IBCForward_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"noble", "router", "ibc_forward", "source_contract_address", "nonce"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_IBCForward_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 1, 0, 4, 1, 5, 4}, []string{"noble", "router", "ibc_forward", "source_domain_sender", "nonce"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_Query_IBCForwards_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"noble", "router", "ibc_forward"}, "", runtime.AssumeColonVerbOpt(true)))
 

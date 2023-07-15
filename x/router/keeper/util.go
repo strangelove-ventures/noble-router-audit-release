@@ -3,10 +3,8 @@ package keeper
 import (
 	"encoding/binary"
 	"github.com/gogo/protobuf/proto"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
+	"github.com/strangelove-ventures/noble/x/router/types"
 )
-
-// TODO copy pasted from github.com/strangelove-ventures/noble-cctp, change to reference that
 
 type BurnMessage struct {
 	Version       uint32

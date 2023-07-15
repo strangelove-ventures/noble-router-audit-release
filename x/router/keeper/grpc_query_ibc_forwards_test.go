@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/strangelove-ventures/noble-router/x/router/types"
 	keepertest "github.com/strangelove-ventures/noble/testutil/keeper"
 	"github.com/strangelove-ventures/noble/testutil/nullify"
+	"github.com/strangelove-ventures/noble/x/router/types"
 )
 
 // Prevent strconv unused error
@@ -31,24 +31,24 @@ func TestIBCForwardQuerySingle(t *testing.T) {
 		{
 			desc: "First",
 			request: &types.QueryGetIBCForwardRequest{
-				SourceContractAddress: msgs[0].SourceDomainSender,
-				Nonce:                 msgs[0].Nonce,
+				SourceDomainSender: msgs[0].SourceDomainSender,
+				Nonce:              msgs[0].Nonce,
 			},
 			response: &types.QueryGetIBCForwardResponse{IbcForward: msgs[0]},
 		},
 		{
 			desc: "Second",
 			request: &types.QueryGetIBCForwardRequest{
-				SourceContractAddress: msgs[1].SourceDomainSender,
-				Nonce:                 msgs[1].Nonce,
+				SourceDomainSender: msgs[1].SourceDomainSender,
+				Nonce:              msgs[1].Nonce,
 			},
 			response: &types.QueryGetIBCForwardResponse{IbcForward: msgs[1]},
 		},
 		{
 			desc: "KeyNotFound",
 			request: &types.QueryGetIBCForwardRequest{
-				SourceContractAddress: "nothing",
-				Nonce:                 uint64(2),
+				SourceDomainSender: "nothing",
+				Nonce:              uint64(2),
 			},
 			err: status.Error(codes.NotFound, "not found"),
 		},

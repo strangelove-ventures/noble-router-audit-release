@@ -2,14 +2,14 @@ package keeper
 
 import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
+	"github.com/strangelove-ventures/noble/x/router/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // SetIBCForward sets a IBCForward in the store
 func (k Keeper) SetIBCForward(ctx sdk.Context, key types.StoreIBCForwardMetadata) {
-	store := ctx.KVStore(k.storeKey)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.IBCForwardPrefix(types.IBCForwardKeyPrefix))
 	b := k.cdc.MustMarshal(&key)
 	store.Set(types.LookupKey(key.SourceDomainSender, key.Nonce), b)
 }

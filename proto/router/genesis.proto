@@ -7,7 +7,7 @@ import "router/in_flight_packet.proto";
 import "router/mint.proto";
 import "router/params.proto";
 
-option go_package = "github.com/strangelove-ventures/noble-router/x/router/types";
+option go_package = "github.com/strangelove-ventures/noble/x/router/types";
 
 // GenesisState defines the router module's genesis state.
 message GenesisState {

@@ -2,14 +2,14 @@ package keeper
 
 import (
 	"github.com/cosmos/cosmos-sdk/store/prefix"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
+	"github.com/strangelove-ventures/noble/x/router/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // SetMint sets a mint in the store
 func (k Keeper) SetMint(ctx sdk.Context, key types.Mint) {
-	store := ctx.KVStore(k.storeKey)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.MintPrefix(types.MintKeyPrefix))
 	b := k.cdc.MustMarshal(&key)
 	store.Set(types.LookupKey(key.SourceDomainSender, key.Nonce), b)
 }

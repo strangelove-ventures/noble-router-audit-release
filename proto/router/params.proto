@@ -3,7 +3,7 @@ package noble.router;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/strangelove-ventures/noble-router/x/router/types";
+option go_package = "github.com/strangelove-ventures/noble/x/router/types";
 
 // Params defines the parameters for the module.
 message Params {

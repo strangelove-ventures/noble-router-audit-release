@@ -104,6 +104,10 @@ import (
 	tokenfactorymodule "github.com/strangelove-ventures/noble/x/tokenfactory"
 	tokenfactorymodulekeeper "github.com/strangelove-ventures/noble/x/tokenfactory/keeper"
 	tokenfactorymoduletypes "github.com/strangelove-ventures/noble/x/tokenfactory/types"
+
+	routermodule "github.com/strangelove-ventures/noble/x/router"
+	routerkeeper "github.com/strangelove-ventures/noble/x/router/keeper"
+	routertypes "github.com/strangelove-ventures/noble/x/router/types"
 )
 
 const (
@@ -144,6 +148,7 @@ var (
 		packetforward.AppModuleBasic{},
 		globalfee.AppModuleBasic{},
 		tariff.AppModuleBasic{},
+		routermodule.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -209,6 +214,7 @@ type App struct {
 	ICAHostKeeper       icahostkeeper.Keeper
 	FeeGrantKeeper      feegrantkeeper.Keeper
 	PacketForwardKeeper *packetforwardkeeper.Keeper
+	RouterKeeper        *routerkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper         capabilitykeeper.ScopedKeeper
@@ -256,7 +262,7 @@ func New(
 		authtypes.StoreKey, authz.ModuleName, banktypes.StoreKey, slashingtypes.StoreKey, distrtypes.StoreKey,
 		paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey, evidencetypes.StoreKey,
 		ibctransfertypes.StoreKey, icahosttypes.StoreKey, capabilitytypes.StoreKey,
-		tokenfactorymoduletypes.StoreKey, fiattokenfactorymoduletypes.StoreKey, packetforwardtypes.StoreKey, stakingtypes.StoreKey,
+		tokenfactorymoduletypes.StoreKey, fiattokenfactorymoduletypes.StoreKey, packetforwardtypes.StoreKey, stakingtypes.StoreKey, routertypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -457,6 +463,15 @@ func New(
 	)
 	fiattokenfactorymodule := fiattokenfactorymodule.NewAppModule(appCodec, app.FiatTokenFactoryKeeper, app.AccountKeeper, app.BankKeeper)
 
+	app.RouterKeeper = routerkeeper.NewKeeper(
+		appCodec,
+		keys[routertypes.StoreKey],
+		app.GetSubspace(routertypes.ModuleName),
+
+		app.TransferKeeper,
+	)
+	routermodule := routermodule.NewAppModule(appCodec, app.RouterKeeper)
+
 	var transferStack ibcporttypes.IBCModule
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = packetforward.NewIBCMiddleware(
@@ -507,6 +522,7 @@ func New(
 		icaModule,
 		tokenfactoryModule,
 		fiattokenfactorymodule,
+		routermodule,
 		packetforward.NewAppModule(app.PacketForwardKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
@@ -541,6 +557,7 @@ func New(
 		tokenfactorymoduletypes.ModuleName,
 		fiattokenfactorymoduletypes.ModuleName,
 		globalfee.ModuleName,
+		routertypes.ModuleName,
 	)
 
 	app.mm.SetOrderEndBlockers(
@@ -566,6 +583,7 @@ func New(
 		fiattokenfactorymoduletypes.ModuleName,
 		globalfee.ModuleName,
 		tarifftypes.ModuleName,
+		routertypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -596,6 +614,7 @@ func New(
 		tokenfactorymoduletypes.ModuleName,
 		fiattokenfactorymoduletypes.ModuleName,
 		globalfee.ModuleName,
+		routertypes.ModuleName,
 
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
@@ -624,6 +643,7 @@ func New(
 		transferModule,
 		tokenfactoryModule,
 		fiattokenfactorymodule,
+		// TODO routermodule,
 	)
 	app.sm.RegisterStoreDecoders()
 
@@ -829,6 +849,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(fiattokenfactorymoduletypes.ModuleName)
 	paramsKeeper.Subspace(upgradetypes.ModuleName)
 	paramsKeeper.Subspace(globalfee.ModuleName)
+	paramsKeeper.Subspace(routertypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper

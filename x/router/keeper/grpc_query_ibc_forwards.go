@@ -6,7 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
+	"github.com/strangelove-ventures/noble/x/router/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -17,7 +17,7 @@ func (k Keeper) IBCForward(c context.Context, req *types.QueryGetIBCForwardReque
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	val, found := k.GetIBCForward(ctx, req.SourceContractAddress, req.Nonce)
+	val, found := k.GetIBCForward(ctx, req.SourceDomainSender, req.Nonce)
 	if !found {
 		return nil, status.Error(codes.NotFound, "not found")
 	}

@@ -3,8 +3,8 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/strangelove-ventures/noble-router/x/router/types"
 	testkeeper "github.com/strangelove-ventures/noble/testutil/keeper"
+	"github.com/strangelove-ventures/noble/x/router/types"
 	"github.com/stretchr/testify/require"
 )
 

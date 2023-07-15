@@ -28,8 +28,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // @param source_domain_sender
 // @param nonce
 // @param port
-// @param channel
-// @param destination_receiver
+// @param metadata
 // @param ack_error
 type StoreIBCForwardMetadata struct {
 	SourceDomainSender string              `protobuf:"bytes,1,opt,name=source_domain_sender,json=sourceDomainSender,proto3" json:"source_domain_sender,omitempty"`
@@ -100,7 +99,6 @@ func (m *StoreIBCForwardMetadata) GetAckError() bool {
 }
 
 // IBCForwardMetadata is the information a user includes in their depositForBurnWithMetadata data field
-// TODO
 // @param port
 // @param channel
 // @param destination_receiver

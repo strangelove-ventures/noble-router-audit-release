@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/strangelove-ventures/noble-router/x/router/keeper"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
 	keepertest "github.com/strangelove-ventures/noble/testutil/keeper"
 	"github.com/strangelove-ventures/noble/testutil/nullify"
+	"github.com/strangelove-ventures/noble/x/router/keeper"
+	"github.com/strangelove-ventures/noble/x/router/types"
 	"github.com/stretchr/testify/require"
 )
 

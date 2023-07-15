@@ -11,10 +11,10 @@ import (
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"google.golang.org/grpc/status"
 
-	"github.com/strangelove-ventures/noble-router/x/router/client/cli"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
 	"github.com/strangelove-ventures/noble/testutil/network"
 	"github.com/strangelove-ventures/noble/testutil/nullify"
+	"github.com/strangelove-ventures/noble/x/router/client/cli"
+	"github.com/strangelove-ventures/noble/x/router/types"
 )
 
 func networkWithInFlightPacketObjects(t *testing.T, n int) (*network.Network, []types.InFlightPacket) {
@@ -26,6 +26,10 @@ func networkWithInFlightPacketObjects(t *testing.T, n int) (*network.Network, []
 	for i := 0; i < n; i++ {
 		InFlightPacket := types.InFlightPacket{
 			SourceDomainSender: strconv.Itoa(i),
+			Nonce:              uint64(i),
+			ChannelId:          strconv.Itoa(i),
+			PortId:             strconv.Itoa(i),
+			Sequence:           uint64(i),
 		}
 		nullify.Fill(&InFlightPacket)
 		state.InFlightPackets = append(state.InFlightPackets, InFlightPacket)
@@ -44,29 +48,37 @@ func TestShowInFlightPacket(t *testing.T) {
 		fmt.Sprintf("--%s=json", tmcli.OutputFlag),
 	}
 	for _, tc := range []struct {
-		desc  string
-		idKey string
+		desc      string
+		channelId string
+		portId    string
+		sequence  string
 
 		args []string
 		err  error
 		obj  types.InFlightPacket
 	}{
 		{
-			desc:  "found",
-			idKey: objs[0].SourceDomainSender,
-			args:  common,
-			obj:   objs[0],
+			desc:      "found",
+			channelId: objs[0].ChannelId,
+			portId:    objs[0].PortId,
+			sequence:  strconv.FormatUint(objs[0].Sequence, 10),
+			args:      common,
+			obj:       objs[0],
 		},
 		{
-			desc:  "not found",
-			idKey: "123",
-			args:  common,
-			err:   status.Error(codes.NotFound, "not found"),
+			desc:      "not found",
+			channelId: "123",
+			portId:    "456",
+			sequence:  strconv.FormatUint(789, 10),
+			args:      common,
+			err:       status.Error(codes.NotFound, "not found"),
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			args := []string{
-				tc.idKey,
+				tc.channelId,
+				tc.portId,
+				tc.sequence,
 			}
 			args = append(args, tc.args...)
 			out, err := clitestutil.ExecTestCLICmd(ctx, cli.CmdShowInFlightPacket(), args)

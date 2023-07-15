@@ -7,7 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/spf13/cobra"
-	"github.com/strangelove-ventures/noble-router/x/router/types"
+	"github.com/strangelove-ventures/noble/x/router/types"
 )
 
 func CmdListIBCForwards() *cobra.Command {
@@ -46,7 +46,7 @@ func CmdListIBCForwards() *cobra.Command {
 
 func CmdShowIBCForward() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-ibc-forward [source-contract-address] [nonce]",
+		Use:   "show-ibc-forward [source-domain-sender] [nonce]",
 		Short: "shows an IBC Forward",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -54,7 +54,7 @@ func CmdShowIBCForward() *cobra.Command {
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			sourceContractAddress := args[0]
+			sourceDomainSender := args[0]
 			nonceRaw := args[1]
 			nonce, err := strconv.ParseUint(nonceRaw, 10, 64)
 			if err != nil {
@@ -62,8 +62,8 @@ func CmdShowIBCForward() *cobra.Command {
 			}
 
 			params := &types.QueryGetIBCForwardRequest{
-				SourceContractAddress: sourceContractAddress,
-				Nonce:                 nonce,
+				SourceDomainSender: sourceDomainSender,
+				Nonce:              nonce,
 			}
 
 			res, err := queryClient.IBCForward(context.Background(), params)

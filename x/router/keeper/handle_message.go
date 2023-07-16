@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"context"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
@@ -10,8 +9,7 @@ import (
 	"strconv"
 )
 
-func (k Keeper) HandleMessage(goCtx context.Context, msg []byte) error {
-	ctx := sdk.UnwrapSDKContext(goCtx)
+func (k Keeper) HandleMessage(ctx sdk.Context, msg []byte) error {
 
 	// parse outer message
 	outerMessage, err := DecodeMessage(msg)
@@ -20,7 +18,7 @@ func (k Keeper) HandleMessage(goCtx context.Context, msg []byte) error {
 	}
 
 	// parse internal message into IBCForward
-	if ibcForward, err := decodeIBCForward(outerMessage.MessageBody); err == nil {
+	if ibcForward, err := DecodeIBCForward(outerMessage.MessageBody); err == nil {
 		if storedForward, ok := k.GetIBCForward(ctx, string(outerMessage.Sender), outerMessage.Nonce); ok {
 			if storedForward.AckError {
 				if existingMint, ok := k.GetMint(ctx, string(outerMessage.Sender), outerMessage.Nonce); ok {
@@ -44,14 +42,14 @@ func (k Keeper) HandleMessage(goCtx context.Context, msg []byte) error {
 	}
 
 	// try to parse internal message into burn (representing a remote burn -> local mint)
-	if burnMessage, err := decodeBurnMessage(outerMessage.MessageBody); err == nil {
+	if burnMessage, err := DecodeBurnMessage(outerMessage.MessageBody); err == nil {
 		// message is a Mint
 		mint := types.Mint{
 			SourceDomainSender: string(outerMessage.Sender),
 			Nonce:              outerMessage.Nonce,
 			Amount: &sdk.Coin{
 				Denom:  string(burnMessage.BurnToken),
-				Amount: sdk.NewInt(int64(burnMessage.Amount)),
+				Amount: sdk.NewIntFromBigInt(&burnMessage.Amount),
 			},
 			DestinationDomain: strconv.Itoa(int(outerMessage.DestinationDomain)),
 			MintRecipient:     string(burnMessage.MintRecipient),

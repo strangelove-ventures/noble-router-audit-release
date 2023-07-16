@@ -6,13 +6,14 @@ import (
 	"encoding/binary"
 	"github.com/gogo/protobuf/proto"
 	"github.com/strangelove-ventures/noble/x/router/types"
+	"math/big"
 )
 
 type BurnMessage struct {
 	Version       uint32
 	BurnToken     []byte
 	MintRecipient []byte
-	Amount        uint64
+	Amount        big.Int
 	MessageSender []byte
 }
 
@@ -58,18 +59,22 @@ const (
 	Bytes32Len          = 32
 )
 
-// TODO test these, make sure indices are correct, errs correctly
+func DecodeBurnMessage(msg []byte) (*BurnMessage, error) {
+	if len(msg) != BurnMessageLen ||
+		!isValidUint32(msg[BurnMsgVersionIndex:BurnTokenIndex]) ||
+		!isValidUint256(msg[AmountIndex:MsgSenderIndex]) {
+		return nil, sdkerrors.Wrap(types.ErrDecodingMessage, "error decoding burn message")
+	}
 
-func decodeBurnMessage(msg []byte) (BurnMessage, error) {
 	message := BurnMessage{
 		Version:       binary.BigEndian.Uint32(msg[BurnMsgVersionIndex:BurnTokenIndex]),
 		BurnToken:     msg[BurnTokenIndex:MintRecipientIndex],
 		MintRecipient: msg[MintRecipientIndex:AmountIndex],
-		Amount:        binary.BigEndian.Uint64(msg[AmountIndex:MsgSenderIndex]),
+		Amount:        bytesToBigInt(msg[AmountIndex:MsgSenderIndex]),
 		MessageSender: msg[MsgSenderIndex:BurnMessageLen],
 	}
 
-	return message, nil
+	return &message, nil
 }
 
 func DecodeMessage(msg []byte) (*Message, error) {
@@ -96,10 +101,10 @@ func DecodeMessage(msg []byte) (*Message, error) {
 	return &message, nil
 }
 
-func decodeIBCForward(msg []byte) (types.IBCForwardMetadata, error) {
+func DecodeIBCForward(msg []byte) (types.IBCForwardMetadata, error) {
 	var res types.IBCForwardMetadata
 	if err := proto.Unmarshal(msg, &res); err != nil {
-		return types.IBCForwardMetadata{}, err
+		return types.IBCForwardMetadata{}, sdkerrors.Wrapf(types.ErrDecodingMessage, "error decoding ibc forward")
 	}
 
 	return res, nil
@@ -115,4 +120,23 @@ func isValidUint64(byteArray []byte) bool {
 	var value uint64
 	err := binary.Read(bytes.NewReader(byteArray), binary.BigEndian, &value)
 	return err == nil
+}
+
+// return true if valid uint256
+func isValidUint256(byteArray []byte) bool {
+	bigInt := new(big.Int).SetBytes(byteArray)
+
+	if bigInt.BitLen() > 256 {
+		return false
+	}
+
+	return true
+}
+
+func bytesToBigInt(data []byte) big.Int {
+	value := big.Int{}
+	value.SetBytes(data)
+
+	return value
+
 }

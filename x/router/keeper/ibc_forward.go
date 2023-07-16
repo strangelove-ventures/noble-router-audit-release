@@ -8,10 +8,10 @@ import (
 )
 
 // SetIBCForward sets a IBCForward in the store
-func (k Keeper) SetIBCForward(ctx sdk.Context, key types.StoreIBCForwardMetadata) {
+func (k Keeper) SetIBCForward(ctx sdk.Context, forward types.StoreIBCForwardMetadata) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.IBCForwardPrefix(types.IBCForwardKeyPrefix))
-	b := k.cdc.MustMarshal(&key)
-	store.Set(types.LookupKey(key.SourceDomainSender, key.Nonce), b)
+	b := k.cdc.MustMarshal(&forward)
+	store.Set(types.LookupKey(forward.SourceDomainSender, forward.Nonce), b)
 }
 
 // GetIBCForward returns IBCForward

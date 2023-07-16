@@ -91,7 +91,7 @@ func TestDecodeBurnMessage(t *testing.T) {
 		{
 			desc: "invalid",
 			msg:  []byte("-1"),
-			err:  types.ErrDecodingMessage,
+			err:  types.ErrDecodingBurnMessage,
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -136,7 +136,7 @@ func TestDecodeIBCForward(t *testing.T) {
 		{
 			desc: "invalid",
 			msg:  []byte("not a valid ibc forward message"),
-			err:  types.ErrDecodingMessage,
+			err:  types.ErrDecodingIBCForward,
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {

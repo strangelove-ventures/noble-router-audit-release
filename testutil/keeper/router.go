@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"github.com/strangelove-ventures/packet-forward-middleware/v3/test/mock"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -39,7 +38,7 @@ func RouterKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		cdc,
 		storeKey,
 		paramsSubspace,
-		&mock.MockTransferKeeper{},
+		MockTransferKeeper{},
 	)
 
 	ctx := sdk.NewContext(stateStore, tmproto.Header{}, false, log.NewNopLogger())

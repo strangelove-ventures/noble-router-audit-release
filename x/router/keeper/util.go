@@ -63,7 +63,7 @@ func DecodeBurnMessage(msg []byte) (*BurnMessage, error) {
 	if len(msg) != BurnMessageLen ||
 		!isValidUint32(msg[BurnMsgVersionIndex:BurnTokenIndex]) ||
 		!isValidUint256(msg[AmountIndex:MsgSenderIndex]) {
-		return nil, sdkerrors.Wrap(types.ErrDecodingMessage, "error decoding burn message")
+		return nil, sdkerrors.Wrap(types.ErrDecodingBurnMessage, "error decoding burn message")
 	}
 
 	message := BurnMessage{
@@ -104,7 +104,7 @@ func DecodeMessage(msg []byte) (*Message, error) {
 func DecodeIBCForward(msg []byte) (types.IBCForwardMetadata, error) {
 	var res types.IBCForwardMetadata
 	if err := proto.Unmarshal(msg, &res); err != nil {
-		return types.IBCForwardMetadata{}, sdkerrors.Wrapf(types.ErrDecodingMessage, "error decoding ibc forward")
+		return types.IBCForwardMetadata{}, sdkerrors.Wrapf(types.ErrDecodingIBCForward, "error decoding ibc forward")
 	}
 
 	return res, nil

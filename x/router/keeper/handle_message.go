@@ -29,7 +29,7 @@ func (k Keeper) HandleMessage(ctx sdk.Context, msg []byte) error {
 
 			return sdkerrors.Wrapf(types.ErrHandleMessage, "previous operation still in progress")
 		}
-		// this is the first time we are seeing this forward info, store it.
+		// this is the first time we are seeing this forward info -> store it.
 		k.SetIBCForward(ctx, types.StoreIBCForwardMetadata{
 			SourceDomainSender: string(outerMessage.Sender),
 			Nonce:              outerMessage.Nonce,
@@ -91,9 +91,12 @@ func (k Keeper) ForwardPacket(ctx sdk.Context, ibcForward types.IBCForwardMetada
 	inFlightPacket := types.InFlightPacket{
 		SourceDomainSender: mint.SourceDomainSender,
 		Nonce:              mint.Nonce,
+		ChannelId:          ibcForward.Channel,
+		PortId:             ibcForward.Port,
+		Sequence:           res.Sequence,
 	}
 
-	k.SetInFlightPacket(ctx, ibcForward.Channel, ibcForward.Port, res.Sequence, inFlightPacket)
+	k.SetInFlightPacket(ctx, inFlightPacket)
 
 	return nil
 }

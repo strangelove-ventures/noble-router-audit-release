@@ -12,7 +12,7 @@ import (
 func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState) {
 
 	for _, elem := range genState.InFlightPackets {
-		k.SetInFlightPacket(ctx, elem.ChannelId, elem.PortId, elem.Sequence, elem)
+		k.SetInFlightPacket(ctx, elem)
 	}
 
 	for _, elem := range genState.Mints {

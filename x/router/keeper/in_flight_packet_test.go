@@ -20,8 +20,11 @@ func createNInFlightPacket(keeper *keeper.Keeper, ctx sdk.Context, n int) []type
 	for i := range items {
 		items[i].SourceDomainSender = strconv.Itoa(i)
 		items[i].Nonce = uint64(i)
+		items[i].ChannelId = strconv.Itoa(i)
+		items[i].PortId = strconv.Itoa(i)
+		items[i].Sequence = uint64(i)
 
-		keeper.SetInFlightPacket(ctx, strconv.Itoa(i), strconv.Itoa(i), uint64(i), items[i])
+		keeper.SetInFlightPacket(ctx, items[i])
 	}
 	return items
 }

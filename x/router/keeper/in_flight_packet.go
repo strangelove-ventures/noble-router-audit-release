@@ -8,10 +8,10 @@ import (
 )
 
 // SetInFlightPacket sets a InFlightPacket in the store
-func (k Keeper) SetInFlightPacket(ctx sdk.Context, channelID string, portID string, sequence uint64, ifp types.InFlightPacket) {
+func (k Keeper) SetInFlightPacket(ctx sdk.Context, ifp types.InFlightPacket) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.InFlightPacketPrefix(types.InFlightPacketKeyPrefix))
 	b := k.cdc.MustMarshal(&ifp)
-	store.Set(types.InFlightPacketKey(channelID, portID, sequence), b)
+	store.Set(types.InFlightPacketKey(ifp.ChannelId, ifp.PortId, ifp.Sequence), b)
 }
 
 // GetInFlightPacket returns InFlightPacket

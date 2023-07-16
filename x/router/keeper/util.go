@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"bytes"
+	sdkerrors "cosmossdk.io/errors"
 	"encoding/binary"
 	"github.com/gogo/protobuf/proto"
 	"github.com/strangelove-ventures/noble/x/router/types"
@@ -70,7 +72,16 @@ func decodeBurnMessage(msg []byte) (BurnMessage, error) {
 	return message, nil
 }
 
-func decodeMessage(msg []byte) (Message, error) {
+func DecodeMessage(msg []byte) (*Message, error) {
+
+	if len(msg) < MessageBodyIndex ||
+		!isValidUint32(msg[VersionIndex:SourceDomainIndex]) ||
+		!isValidUint32(msg[SourceDomainIndex:DestinationDomainIndex]) ||
+		!isValidUint32(msg[DestinationDomainIndex:NonceIndex]) ||
+		!isValidUint64(msg[NonceIndex:SenderIndex]) {
+		return nil, sdkerrors.Wrap(types.ErrDecodingMessage, "error decoding message")
+	}
+
 	message := Message{
 		Version:           binary.BigEndian.Uint32(msg[VersionIndex:SourceDomainIndex]),
 		SourceDomain:      binary.BigEndian.Uint32(msg[SourceDomainIndex:DestinationDomainIndex]),
@@ -82,7 +93,7 @@ func decodeMessage(msg []byte) (Message, error) {
 		MessageBody:       msg[MessageBodyIndex:],
 	}
 
-	return message, nil
+	return &message, nil
 }
 
 func decodeIBCForward(msg []byte) (types.IBCForwardMetadata, error) {
@@ -92,4 +103,16 @@ func decodeIBCForward(msg []byte) (types.IBCForwardMetadata, error) {
 	}
 
 	return res, nil
+}
+
+func isValidUint32(byteArray []byte) bool {
+	var value uint32
+	err := binary.Read(bytes.NewReader(byteArray), binary.BigEndian, &value)
+	return err == nil
+}
+
+func isValidUint64(byteArray []byte) bool {
+	var value uint64
+	err := binary.Read(bytes.NewReader(byteArray), binary.BigEndian, &value)
+	return err == nil
 }

@@ -15,10 +15,10 @@ func (k Keeper) SetMint(ctx sdk.Context, key types.Mint) {
 }
 
 // GetMint returns mint
-func (k Keeper) GetMint(ctx sdk.Context, sourceContractAddress string, nonce uint64) (val types.Mint, found bool) {
+func (k Keeper) GetMint(ctx sdk.Context, sourceDomainSender string, nonce uint64) (val types.Mint, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.MintPrefix(types.MintKeyPrefix))
 
-	b := store.Get(types.MintPrefix(string(types.LookupKey(sourceContractAddress, nonce))))
+	b := store.Get(types.MintPrefix(string(types.LookupKey(sourceDomainSender, nonce))))
 	if b == nil {
 		return val, false
 	}
@@ -28,9 +28,9 @@ func (k Keeper) GetMint(ctx sdk.Context, sourceContractAddress string, nonce uin
 }
 
 // DeleteMint removes a mint from the store
-func (k Keeper) DeleteMint(ctx sdk.Context, sourceContractAddress string, nonce uint64) {
+func (k Keeper) DeleteMint(ctx sdk.Context, sourceDomainSender string, nonce uint64) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.MintPrefix(types.MintKeyPrefix))
-	store.Delete(types.MintPrefix(string(types.LookupKey(sourceContractAddress, nonce))))
+	store.Delete(types.MintPrefix(string(types.LookupKey(sourceDomainSender, nonce))))
 }
 
 // GetAllMints returns all mints

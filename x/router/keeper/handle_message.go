@@ -14,7 +14,7 @@ func (k Keeper) HandleMessage(goCtx context.Context, msg []byte) error {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// parse outer message
-	outerMessage, err := decodeMessage(msg)
+	outerMessage, err := DecodeMessage(msg)
 	if err != nil {
 		return err
 	}

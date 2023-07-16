@@ -8,5 +8,6 @@ import (
 
 // x/router module sentinel errors
 var (
-	ErrHandleMessage           = sdkerrors.Register(ModuleName, 2, "err during handle message")
+	ErrHandleMessage   = sdkerrors.Register(ModuleName, 2, "err during handle message")
+	ErrDecodingMessage = sdkerrors.Register(ModuleName, 3, "err decoding message")
 )

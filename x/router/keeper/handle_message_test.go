@@ -74,7 +74,7 @@ func TestForwardOnAckErrWithExistingMint(t *testing.T) {
 		MintRecipient:     "12345",
 	})
 
-	packet, found := routerKeeper.GetInFlightPacket(ctx, port, channel, sequence)
+	_, found := routerKeeper.GetInFlightPacket(ctx, port, channel, sequence)
 	require.False(t, found)
 
 	msg := bytesFromMessage(keeper.Message{
@@ -97,7 +97,7 @@ func TestForwardOnAckErrWithExistingMint(t *testing.T) {
 	err := routerKeeper.HandleMessage(ctx, msg)
 	require.Nil(t, err)
 
-	packet, found = routerKeeper.GetInFlightPacket(ctx, channel, port, sequence)
+	packet, found := routerKeeper.GetInFlightPacket(ctx, channel, port, sequence)
 	require.True(t, found)
 	require.Equal(t, port, packet.PortId)
 	require.Equal(t, channel, packet.ChannelId)
@@ -146,7 +146,7 @@ func TestForwardOnAckErrWithNoMint(t *testing.T) {
 	})
 
 	require.Panics(t, func() {
-		routerKeeper.HandleMessage(ctx, msg)
+		_ = routerKeeper.HandleMessage(ctx, msg)
 	})
 
 }
@@ -213,7 +213,7 @@ func TestForwardWithNoForwardFoundAndExistingMint(t *testing.T) {
 		MintRecipient:     "12345",
 	})
 
-	packet, found := routerKeeper.GetInFlightPacket(ctx, port, channel, sequence)
+	_, found := routerKeeper.GetInFlightPacket(ctx, port, channel, sequence)
 	require.False(t, found)
 
 	msg := bytesFromMessage(keeper.Message{
@@ -236,7 +236,7 @@ func TestForwardWithNoForwardFoundAndExistingMint(t *testing.T) {
 	err := routerKeeper.HandleMessage(ctx, msg)
 	require.Nil(t, err)
 
-	packet, found = routerKeeper.GetInFlightPacket(ctx, channel, port, sequence)
+	packet, found := routerKeeper.GetInFlightPacket(ctx, channel, port, sequence)
 	require.True(t, found)
 	require.Equal(t, port, packet.PortId)
 	require.Equal(t, channel, packet.ChannelId)
@@ -346,7 +346,7 @@ func TestMintWithExistingForward(t *testing.T) {
 		AckError: false,
 	})
 
-	packet, found := routerKeeper.GetInFlightPacket(ctx, port, channel, sequence)
+	_, found := routerKeeper.GetInFlightPacket(ctx, port, channel, sequence)
 	require.False(t, found)
 
 	msg := bytesFromMessage(keeper.Message{
@@ -369,7 +369,7 @@ func TestMintWithExistingForward(t *testing.T) {
 	err := routerKeeper.HandleMessage(ctx, msg)
 	require.Nil(t, err)
 
-	packet, found = routerKeeper.GetInFlightPacket(ctx, channel, port, sequence)
+	packet, found := routerKeeper.GetInFlightPacket(ctx, channel, port, sequence)
 	require.True(t, found)
 	require.Equal(t, port, packet.PortId)
 	require.Equal(t, channel, packet.ChannelId)

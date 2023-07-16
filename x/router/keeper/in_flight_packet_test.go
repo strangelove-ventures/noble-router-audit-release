@@ -49,7 +49,7 @@ func TestInFlightPacketGet(t *testing.T) {
 func TestInFlightPacketRemove(t *testing.T) {
 	routerKeeper, ctx := keepertest.RouterKeeper(t)
 	items := createNInFlightPacket(routerKeeper, ctx, 10)
-	for i, _ := range items {
+	for i := range items {
 		routerKeeper.DeleteInFlightPacket(
 			ctx,
 			strconv.Itoa(i),
@@ -68,9 +68,8 @@ func TestInFlightPacketGetAll(t *testing.T) {
 	routerKeeper, ctx := keepertest.RouterKeeper(t)
 	items := createNInFlightPacket(routerKeeper, ctx, 10)
 	inFlightPacket := make([]types.InFlightPacket, len(items))
-	for i, item := range items {
-		inFlightPacket[i] = item
-	}
+	copy(inFlightPacket, items)
+
 	require.ElementsMatch(t,
 		nullify.Fill(inFlightPacket),
 		nullify.Fill(routerKeeper.GetAllInFlightPackets(ctx)),

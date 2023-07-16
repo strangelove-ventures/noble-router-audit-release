@@ -41,22 +41,17 @@ const (
 
 	// Indices of each field in BurnMessage
 	BurnMsgVersionIndex = 0
-	VersionLen          = 4
 	BurnTokenIndex      = 4
 	BurnTokenLen        = 32
 	MintRecipientIndex  = 36
 	MintRecipientLen    = 32
 	AmountIndex         = 68
-	AmountLen           = 32
 	MsgSenderIndex      = 100
 	MsgSenderLen        = 32
 	// 4 byte version + 32 bytes burnToken + 32 bytes mintRecipient + 32 bytes amount + 32 bytes messageSender
 	BurnMessageLen = 132
 
-	NobleMessageVersion = 0
-	MessageBodyVersion  = 0
-	NobleDomainId       = 4
-	Bytes32Len          = 32
+	Bytes32Len = 32
 )
 
 func DecodeBurnMessage(msg []byte) (*BurnMessage, error) {
@@ -125,12 +120,7 @@ func isValidUint64(byteArray []byte) bool {
 // return true if valid uint256
 func isValidUint256(byteArray []byte) bool {
 	bigInt := new(big.Int).SetBytes(byteArray)
-
-	if bigInt.BitLen() > 256 {
-		return false
-	}
-
-	return true
+	return bigInt.BitLen() <= 256
 }
 
 func bytesToBigInt(data []byte) big.Int {

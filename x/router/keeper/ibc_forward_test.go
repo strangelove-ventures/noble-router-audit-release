@@ -65,9 +65,8 @@ func TestIBCForwardGetAll(t *testing.T) {
 	routerKeeper, ctx := keepertest.RouterKeeper(t)
 	items := createNIBCForward(routerKeeper, ctx, 10)
 	ibcForward := make([]types.StoreIBCForwardMetadata, len(items))
-	for i, item := range items {
-		ibcForward[i] = item
-	}
+	copy(ibcForward, items)
+
 	require.ElementsMatch(t,
 		nullify.Fill(ibcForward),
 		nullify.Fill(routerKeeper.GetAllIBCForwards(ctx)),

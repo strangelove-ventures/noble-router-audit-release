@@ -3,13 +3,10 @@ package types_test
 import (
 	"testing"
 
-	"github.com/strangelove-ventures/noble/testutil/sample"
 	"github.com/strangelove-ventures/noble/x/router/types"
 
 	"github.com/stretchr/testify/require"
 )
-
-var testAddress = sample.AccAddress()
 
 func TestGenesisState_Validate(t *testing.T) {
 	for _, tc := range []struct {

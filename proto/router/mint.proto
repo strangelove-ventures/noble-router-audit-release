@@ -7,11 +7,11 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/strangelove-ventures/noble/x/router/types";
 
 // mints are stored so incoming IBC forward messages can check if a mint has been processed
-// @param source_domain_sender
-// @param nonce
-// @param amount
-// @param destination_domain
-// @param mint_recipient
+// @param source_domain_sender - address of MessageTransmitter caller on source domain
+// @param nonce - unique message nonce
+// @param amount - amount of minted tokens
+// @param destination_domain - destination domain id
+// @param mint_recipient - address to receive minted tokens on destination domain
 message Mint {
   string source_domain_sender = 1;
   uint64 nonce = 2;

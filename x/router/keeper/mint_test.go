@@ -65,9 +65,8 @@ func TestMintGetAll(t *testing.T) {
 	routerKeeper, ctx := keepertest.RouterKeeper(t)
 	items := createNMint(routerKeeper, ctx, 10)
 	mint := make([]types.Mint, len(items))
-	for i, item := range items {
-		mint[i] = item
-	}
+	copy(mint, items)
+
 	require.ElementsMatch(t,
 		nullify.Fill(mint),
 		nullify.Fill(routerKeeper.GetAllMints(ctx)),

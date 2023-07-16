@@ -77,9 +77,7 @@ func TestMintQueryPaginated(t *testing.T) {
 	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNMint(keeper, ctx, 5)
 	Mint := make([]types.Mint, len(msgs))
-	for i, msg := range msgs {
-		Mint[i] = msg
-	}
+	copy(Mint, msgs)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllMintsRequest {
 		return &types.QueryAllMintsRequest{

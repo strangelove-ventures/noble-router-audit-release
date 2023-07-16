@@ -7,11 +7,10 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/strangelove-ventures/noble/x/router/types";
 
 // StoreIBCForwardMetadata are stored so incoming mints can check for a forward message
-// @param source_domain_sender
-// @param nonce
-// @param port
-// @param metadata
-// @param ack_error
+// @param source_domain_sender - address of MessageTransmitter caller on source domain
+// @param nonce - unique message nonce
+// @param metadata - ibc metadata
+// @param ack_error - set to true if packet fails
 message StoreIBCForwardMetadata {
   string source_domain_sender = 1;
   uint64 nonce = 2;
@@ -20,11 +19,11 @@ message StoreIBCForwardMetadata {
 }
 
 // IBCForwardMetadata is the information a user includes in their depositForBurnWithMetadata data field
-// @param port
-// @param channel
-// @param destination_receiver
-// @param memo
-// @param timeout_in_nanoseconds
+// @param port - ibc port
+// @param channel - ibc channel
+// @param destination_receiver - address on destination domain
+// @param memo - optional memo
+// @param timeout_in_nanoseconds - timeout
 message IBCForwardMetadata {
   string port = 1;
   string channel = 2;

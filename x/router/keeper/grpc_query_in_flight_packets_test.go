@@ -80,9 +80,7 @@ func TestInFlightPacketQueryPaginated(t *testing.T) {
 	wctx := sdk.WrapSDKContext(ctx)
 	msgs := createNInFlightPacket(keeper, ctx, 5)
 	InFlightPacket := make([]types.InFlightPacket, len(msgs))
-	for i, msg := range msgs {
-		InFlightPacket[i] = msg
-	}
+	copy(InFlightPacket, msgs)
 
 	request := func(next []byte, offset, limit uint64, total bool) *types.QueryAllInFlightPacketsRequest {
 		return &types.QueryAllInFlightPacketsRequest{

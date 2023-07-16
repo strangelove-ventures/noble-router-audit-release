@@ -463,15 +463,6 @@ func New(
 	)
 	fiattokenfactorymodule := fiattokenfactorymodule.NewAppModule(appCodec, app.FiatTokenFactoryKeeper, app.AccountKeeper, app.BankKeeper)
 
-	app.RouterKeeper = routerkeeper.NewKeeper(
-		appCodec,
-		keys[routertypes.StoreKey],
-		app.GetSubspace(routertypes.ModuleName),
-
-		app.TransferKeeper,
-	)
-	routermodule := routermodule.NewAppModule(appCodec, app.RouterKeeper)
-
 	var transferStack ibcporttypes.IBCModule
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
 	transferStack = packetforward.NewIBCMiddleware(
@@ -482,6 +473,19 @@ func New(
 		packetforwardkeeper.DefaultRefundTransferPacketTimeoutTimestamp,
 	)
 	transferStack = blockibc.NewIBCMiddleware(transferStack, app.TokenFactoryKeeper, app.FiatTokenFactoryKeeper)
+
+	app.RouterKeeper = routerkeeper.NewKeeper(
+		appCodec,
+		keys[routertypes.StoreKey],
+		app.GetSubspace(routertypes.ModuleName),
+
+		app.TransferKeeper,
+	)
+	routermodule.NewIBCMiddleware(
+		transferStack,
+		app.RouterKeeper,
+	)
+	routermodule := routermodule.NewAppModule(appCodec, app.RouterKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()

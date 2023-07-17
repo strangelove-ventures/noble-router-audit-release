@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"bytes"
 	sdkerrors "cosmossdk.io/errors"
 	"encoding/binary"
 	"github.com/gogo/protobuf/proto"
@@ -55,9 +54,7 @@ const (
 )
 
 func DecodeBurnMessage(msg []byte) (*BurnMessage, error) {
-	if len(msg) != BurnMessageLen ||
-		!isValidUint32(msg[BurnMsgVersionIndex:BurnTokenIndex]) ||
-		!isValidUint256(msg[AmountIndex:MsgSenderIndex]) {
+	if len(msg) != BurnMessageLen {
 		return nil, sdkerrors.Wrap(types.ErrDecodingBurnMessage, "error decoding burn message")
 	}
 
@@ -74,11 +71,7 @@ func DecodeBurnMessage(msg []byte) (*BurnMessage, error) {
 
 func DecodeMessage(msg []byte) (*Message, error) {
 
-	if len(msg) < MessageBodyIndex ||
-		!isValidUint32(msg[VersionIndex:SourceDomainIndex]) ||
-		!isValidUint32(msg[SourceDomainIndex:DestinationDomainIndex]) ||
-		!isValidUint32(msg[DestinationDomainIndex:NonceIndex]) ||
-		!isValidUint64(msg[NonceIndex:SenderIndex]) {
+	if len(msg) < MessageBodyIndex {
 		return nil, sdkerrors.Wrap(types.ErrDecodingMessage, "error decoding message")
 	}
 
@@ -103,24 +96,6 @@ func DecodeIBCForward(msg []byte) (types.IBCForwardMetadata, error) {
 	}
 
 	return res, nil
-}
-
-func isValidUint32(byteArray []byte) bool {
-	var value uint32
-	err := binary.Read(bytes.NewReader(byteArray), binary.BigEndian, &value)
-	return err == nil
-}
-
-func isValidUint64(byteArray []byte) bool {
-	var value uint64
-	err := binary.Read(bytes.NewReader(byteArray), binary.BigEndian, &value)
-	return err == nil
-}
-
-// return true if valid uint256
-func isValidUint256(byteArray []byte) bool {
-	bigInt := new(big.Int).SetBytes(byteArray)
-	return bigInt.BitLen() <= 256
 }
 
 func bytesToBigInt(data []byte) big.Int {

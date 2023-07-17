@@ -478,14 +478,12 @@ func New(
 		appCodec,
 		keys[routertypes.StoreKey],
 		app.GetSubspace(routertypes.ModuleName),
-
 		app.TransferKeeper,
 	)
-	routermodule.NewIBCMiddleware(
+	transferStack = routermodule.NewIBCMiddleware(
 		transferStack,
 		app.RouterKeeper,
 	)
-	routermodule := routermodule.NewAppModule(appCodec, app.RouterKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -526,7 +524,7 @@ func New(
 		icaModule,
 		tokenfactoryModule,
 		fiattokenfactorymodule,
-		routermodule,
+		routermodule.NewAppModule(appCodec, app.RouterKeeper),
 		packetforward.NewAppModule(app.PacketForwardKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		globalfee.NewAppModule(app.GetSubspace(globalfee.ModuleName)),
@@ -647,7 +645,6 @@ func New(
 		transferModule,
 		tokenfactoryModule,
 		fiattokenfactorymodule,
-		// TODO routermodule,
 	)
 	app.sm.RegisterStoreDecoders()
 

@@ -313,18 +313,14 @@ func TestMintWithNoForward(t *testing.T) {
 	err := routerKeeper.HandleMessage(ctx, msg)
 	require.Nil(t, err)
 
-	//packet, found = routerKeeper.GetInFlightPacket(ctx, channel, port, sequence)
-	//require.True(t, found)
-	//require.Equal(t, port, packet.PortId)
-	//require.Equal(t, channel, packet.ChannelId)
-	//require.Equal(t, sequence, packet.Sequence)
-
 	mint, found := routerKeeper.GetMint(ctx, sourceDomainSender, nonce)
 	require.True(t, found)
 	require.Equal(t, sourceDomainSender, mint.SourceDomainSender)
 	require.Equal(t, nonce, mint.Nonce)
 
 }
+
+// TODO add test for valid mint with no token pair found
 
 // valid mint, set mint, existing forward -> forward packet
 func TestMintWithExistingForward(t *testing.T) {

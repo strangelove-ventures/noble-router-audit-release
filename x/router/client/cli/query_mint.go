@@ -54,6 +54,9 @@ func CmdShowMint() *cobra.Command {
 			queryClient := types.NewQueryClient(clientCtx)
 
 			sourceDomain, err := strconv.ParseUint(args[0], 10, 32)
+			if err != nil {
+				return err
+			}
 			sourceDomainSender := args[1]
 			nonce, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {

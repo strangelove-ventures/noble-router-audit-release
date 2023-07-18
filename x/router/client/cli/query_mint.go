@@ -45,22 +45,23 @@ func CmdListMints() *cobra.Command {
 
 func CmdShowMint() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-mint [source-domain-sender] [nonce]",
+		Use:   "show-mint [source-domain] [source-domain-sender] [nonce]",
 		Short: "shows a mint",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			sourceDomainSender := args[0]
-			nonceRaw := args[1]
-			nonce, err := strconv.ParseUint(nonceRaw, 10, 64)
+			sourceDomain, err := strconv.ParseUint(args[0], 10, 32)
+			sourceDomainSender := args[1]
+			nonce, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {
 				return err
 			}
 
 			params := &types.QueryGetMintRequest{
+				SourceDomain:       uint32(sourceDomain),
 				SourceDomainSender: sourceDomainSender,
 				Nonce:              nonce,
 			}

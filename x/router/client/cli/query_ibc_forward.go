@@ -13,7 +13,7 @@ import (
 func CmdListIBCForwards() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-ibc-forwards",
-		Short: "lists all IBC Forwards",
+		Short: "lists all IBC forwards",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -46,22 +46,23 @@ func CmdListIBCForwards() *cobra.Command {
 
 func CmdShowIBCForward() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-ibc-forward [source-domain-sender] [nonce]",
-		Short: "shows an IBC Forward",
-		Args:  cobra.ExactArgs(2),
+		Use:   "show-ibc-forward [source-domain] [source-domain-sender] [nonce]",
+		Short: "shows an IBC forward",
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			sourceDomainSender := args[0]
-			nonceRaw := args[1]
-			nonce, err := strconv.ParseUint(nonceRaw, 10, 64)
+			sourceDomain, err := strconv.ParseUint(args[0], 10, 32)
+			sourceDomainSender := args[1]
+			nonce, err := strconv.ParseUint(args[2], 10, 64)
 			if err != nil {
 				return err
 			}
 
 			params := &types.QueryGetIBCForwardRequest{
+				SourceDomain:       uint32(sourceDomain),
 				SourceDomainSender: sourceDomainSender,
 				Nonce:              nonce,
 			}

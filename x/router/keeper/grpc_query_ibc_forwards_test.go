@@ -31,6 +31,7 @@ func TestIBCForwardQuerySingle(t *testing.T) {
 		{
 			desc: "First",
 			request: &types.QueryGetIBCForwardRequest{
+				SourceDomain:       msgs[0].SourceDomain,
 				SourceDomainSender: msgs[0].SourceDomainSender,
 				Nonce:              msgs[0].Nonce,
 			},
@@ -39,6 +40,7 @@ func TestIBCForwardQuerySingle(t *testing.T) {
 		{
 			desc: "Second",
 			request: &types.QueryGetIBCForwardRequest{
+				SourceDomain:       msgs[1].SourceDomain,
 				SourceDomainSender: msgs[1].SourceDomainSender,
 				Nonce:              msgs[1].Nonce,
 			},
@@ -47,6 +49,7 @@ func TestIBCForwardQuerySingle(t *testing.T) {
 		{
 			desc: "KeyNotFound",
 			request: &types.QueryGetIBCForwardRequest{
+				SourceDomain:       uint32(32),
 				SourceDomainSender: "nothing",
 				Nonce:              uint64(2),
 			},

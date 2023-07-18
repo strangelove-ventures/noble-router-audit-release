@@ -25,7 +25,7 @@ service Query {
   rpc Mints(QueryAllMintsRequest) returns (QueryAllMintsResponse) {
     option (google.api.http).get = "/noble/router/mint";
   }
-  // Queries an IBCForward by source_domain_sender and nonce
+  // Queries an IBCForward by source_domain, source_domain_sender and nonce
   rpc IBCForward(QueryGetIBCForwardRequest) returns (QueryGetIBCForwardResponse) {
     option (google.api.http).get = "/noble/router/ibc_forward/{source_domain_sender}/{nonce}";
   }
@@ -35,7 +35,7 @@ service Query {
   }
   // Queries an InFlightPacket by source_domain_sender and nonce
   rpc InFlightPacket(QueryGetInFlightPacketRequest) returns (QueryGetInFlightPacketResponse) {
-    option (google.api.http).get = "/noble/router/in_flight_packets/{source_domain_sender}/{nonce}";
+    option (google.api.http).get = "/noble/router/in_flight_packets/{channel_id}/{port_id}/{sequence}";
   }
   // Queries a list of InFlightPackets
   rpc InFlightPackets(QueryAllInFlightPacketsRequest) returns (QueryAllInFlightPacketsResponse) {
@@ -51,8 +51,9 @@ message QueryParamsResponse {
 }
 
 message QueryGetMintRequest {
-  string source_domain_sender = 1;
-  uint64 nonce = 2;
+  uint32 source_domain = 1;
+  string source_domain_sender = 2;
+  uint64 nonce = 3;
 }
 
 message QueryGetMintResponse {
@@ -69,8 +70,9 @@ message QueryAllMintsResponse {
 }
 
 message QueryGetIBCForwardRequest {
-  string source_domain_sender = 1;
-  uint64 nonce = 2;
+  uint32 source_domain = 1;
+  string source_domain_sender = 2;
+  uint64 nonce = 3;
 }
 
 message QueryGetIBCForwardResponse {

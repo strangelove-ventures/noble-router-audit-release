@@ -11,14 +11,14 @@ import (
 func (k Keeper) SetMint(ctx sdk.Context, key types.Mint) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.MintPrefix(types.MintKeyPrefix))
 	b := k.cdc.MustMarshal(&key)
-	store.Set(types.LookupKey(key.SourceDomainSender, key.Nonce), b)
+	store.Set(types.LookupKey(key.SourceDomain, key.SourceDomainSender, key.Nonce), b)
 }
 
 // GetMint returns mint
-func (k Keeper) GetMint(ctx sdk.Context, sourceDomainSender string, nonce uint64) (val types.Mint, found bool) {
+func (k Keeper) GetMint(ctx sdk.Context, sourceDomain uint32, sourceDomainSender string, nonce uint64) (val types.Mint, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.MintPrefix(types.MintKeyPrefix))
 
-	b := store.Get(types.MintPrefix(string(types.LookupKey(sourceDomainSender, nonce))))
+	b := store.Get(types.MintPrefix(string(types.LookupKey(sourceDomain, sourceDomainSender, nonce))))
 	if b == nil {
 		return val, false
 	}
@@ -28,9 +28,9 @@ func (k Keeper) GetMint(ctx sdk.Context, sourceDomainSender string, nonce uint64
 }
 
 // DeleteMint removes a mint from the store
-func (k Keeper) DeleteMint(ctx sdk.Context, sourceDomainSender string, nonce uint64) {
+func (k Keeper) DeleteMint(ctx sdk.Context, sourceDomain uint32, sourceDomainSender string, nonce uint64) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.MintPrefix(types.MintKeyPrefix))
-	store.Delete(types.MintPrefix(string(types.LookupKey(sourceDomainSender, nonce))))
+	store.Delete(types.MintPrefix(string(types.LookupKey(sourceDomain, sourceDomainSender, nonce))))
 }
 
 // GetAllMints returns all mints

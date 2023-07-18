@@ -11,14 +11,14 @@ import (
 func (k Keeper) SetIBCForward(ctx sdk.Context, forward types.StoreIBCForwardMetadata) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.IBCForwardPrefix(types.IBCForwardKeyPrefix))
 	b := k.cdc.MustMarshal(&forward)
-	store.Set(types.LookupKey(forward.SourceDomainSender, forward.Nonce), b)
+	store.Set(types.LookupKey(forward.SourceDomain, forward.SourceDomainSender, forward.Nonce), b)
 }
 
 // GetIBCForward returns IBCForward
-func (k Keeper) GetIBCForward(ctx sdk.Context, sourceDomainSender string, nonce uint64) (val types.StoreIBCForwardMetadata, found bool) {
+func (k Keeper) GetIBCForward(ctx sdk.Context, sourceDomain uint32, sourceDomainSender string, nonce uint64) (val types.StoreIBCForwardMetadata, found bool) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.IBCForwardPrefix(types.IBCForwardKeyPrefix))
 
-	b := store.Get(types.LookupKey(sourceDomainSender, nonce))
+	b := store.Get(types.LookupKey(sourceDomain, sourceDomainSender, nonce))
 	if b == nil {
 		return val, false
 	}
@@ -28,9 +28,9 @@ func (k Keeper) GetIBCForward(ctx sdk.Context, sourceDomainSender string, nonce 
 }
 
 // DeleteIBCForward removes a IBCForward from the store
-func (k Keeper) DeleteIBCForward(ctx sdk.Context, sourceDomainSender string, nonce uint64) {
+func (k Keeper) DeleteIBCForward(ctx sdk.Context, sourceDomain uint32, sourceDomainSender string, nonce uint64) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.IBCForwardPrefix(types.IBCForwardKeyPrefix))
-	store.Delete(types.LookupKey(sourceDomainSender, nonce))
+	store.Delete(types.LookupKey(sourceDomain, sourceDomainSender, nonce))
 }
 
 // GetAllIBCForwards returns all IBCForwards

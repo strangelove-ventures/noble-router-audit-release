@@ -25,6 +25,7 @@ func networkWithIBCForwardObjects(t *testing.T, n int) (*network.Network, []type
 
 	for i := 0; i < n; i++ {
 		IBCForward := types.StoreIBCForwardMetadata{
+			SourceDomain:       uint32(i),
 			SourceDomainSender: strconv.Itoa(i),
 			Nonce:              uint64(i),
 		}
@@ -46,6 +47,7 @@ func TestShowIBCForward(t *testing.T) {
 	}
 	for _, tc := range []struct {
 		desc               string
+		sourceDomain       uint32
 		sourceDomainSender string
 		nonce              string
 
@@ -55,6 +57,7 @@ func TestShowIBCForward(t *testing.T) {
 	}{
 		{
 			desc:               "found",
+			sourceDomain:       objs[0].SourceDomain,
 			sourceDomainSender: objs[0].SourceDomainSender,
 			nonce:              strconv.Itoa(int(objs[0].Nonce)),
 			args:               common,
@@ -62,6 +65,7 @@ func TestShowIBCForward(t *testing.T) {
 		},
 		{
 			desc:               "not found",
+			sourceDomain:       uint32(14),
 			sourceDomainSender: "123",
 			nonce:              "456",
 			args:               common,
@@ -70,6 +74,7 @@ func TestShowIBCForward(t *testing.T) {
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			args := []string{
+				strconv.Itoa(int(tc.sourceDomain)),
 				tc.sourceDomainSender,
 				tc.nonce,
 			}

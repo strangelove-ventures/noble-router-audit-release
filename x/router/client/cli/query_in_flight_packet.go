@@ -13,7 +13,7 @@ import (
 func CmdListInFlightPackets() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-in-flight-packets",
-		Short: "lists all InFlightPackets",
+		Short: "lists all in flight packets",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
@@ -47,7 +47,7 @@ func CmdListInFlightPackets() *cobra.Command {
 func CmdShowInFlightPacket() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show-in-flight-packet [channel-id] [port-id] [sequence]",
-		Short: "shows an InFlightPacket",
+		Short: "shows an in flight packet",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx := client.GetClientContextFromCmd(cmd)

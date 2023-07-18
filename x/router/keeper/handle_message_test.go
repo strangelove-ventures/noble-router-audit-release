@@ -199,7 +199,7 @@ func TestForwardWithFoundForwardAndNoAckError(t *testing.T) {
 func TestForwardWithNoForwardFoundAndExistingMint(t *testing.T) {
 	routerKeeper, ctx := keepertest.RouterKeeper(t)
 
-	sourceDomainSender, nonce := string(fillByteArray(0, 32)), uint64(4)
+	sourceDomain, sourceDomainSender, nonce := uint32(1), string(fillByteArray(0, 32)), uint64(4)
 	port, channel, sequence := "5", "10", uint64(0)
 
 	routerKeeper.SetMint(ctx, types.Mint{
@@ -242,7 +242,7 @@ func TestForwardWithNoForwardFoundAndExistingMint(t *testing.T) {
 	require.Equal(t, channel, packet.ChannelId)
 	require.Equal(t, sequence, packet.Sequence)
 
-	forward, found := routerKeeper.GetIBCForward(ctx, sourceDomainSender, nonce)
+	forward, found := routerKeeper.GetIBCForward(ctx, sourceDomain, sourceDomainSender, nonce)
 	require.True(t, found)
 	require.Equal(t, sourceDomainSender, forward.SourceDomainSender)
 	require.Equal(t, nonce, forward.Nonce)
@@ -253,7 +253,7 @@ func TestForwardWithNoForwardFoundAndExistingMint(t *testing.T) {
 func TestForwardWithNoForwardFoundAndNoMint(t *testing.T) {
 	routerKeeper, ctx := keepertest.RouterKeeper(t)
 
-	sourceDomainSender, nonce := string(fillByteArray(0, 32)), uint64(4)
+	sourceDomain, sourceDomainSender, nonce := uint32(1), string(fillByteArray(0, 32)), uint64(4)
 	port, channel, _ := "5", "10", uint64(0)
 
 	msg := bytesFromMessage(keeper.Message{
@@ -276,7 +276,7 @@ func TestForwardWithNoForwardFoundAndNoMint(t *testing.T) {
 	err := routerKeeper.HandleMessage(ctx, msg)
 	require.Nil(t, err)
 
-	forward, found := routerKeeper.GetIBCForward(ctx, sourceDomainSender, nonce)
+	forward, found := routerKeeper.GetIBCForward(ctx, sourceDomain, sourceDomainSender, nonce)
 	require.True(t, found)
 	require.Equal(t, sourceDomainSender, forward.SourceDomainSender)
 	require.Equal(t, nonce, forward.Nonce)
@@ -287,7 +287,7 @@ func TestForwardWithNoForwardFoundAndNoMint(t *testing.T) {
 func TestMintWithNoForward(t *testing.T) {
 	routerKeeper, ctx := keepertest.RouterKeeper(t)
 
-	sourceDomainSender, nonce := string(fillByteArray(0, 32)), uint64(4)
+	sourceDomain, sourceDomainSender, nonce := uint32(1), string(fillByteArray(0, 32)), uint64(4)
 	port, channel, sequence := "5", "10", uint64(0)
 
 	_, found := routerKeeper.GetInFlightPacket(ctx, port, channel, sequence)
@@ -313,20 +313,20 @@ func TestMintWithNoForward(t *testing.T) {
 	err := routerKeeper.HandleMessage(ctx, msg)
 	require.Nil(t, err)
 
-	mint, found := routerKeeper.GetMint(ctx, sourceDomainSender, nonce)
+	mint, found := routerKeeper.GetMint(ctx, sourceDomain, sourceDomainSender, nonce)
 	require.True(t, found)
 	require.Equal(t, sourceDomainSender, mint.SourceDomainSender)
 	require.Equal(t, nonce, mint.Nonce)
 
 }
 
-// TODO add test for valid mint with no token pair found
+// TODO add test for valid mint with no token pair found once integrated with cctp
 
 // valid mint, set mint, existing forward -> forward packet
 func TestMintWithExistingForward(t *testing.T) {
 	routerKeeper, ctx := keepertest.RouterKeeper(t)
 
-	sourceDomainSender, nonce := string(fillByteArray(0, 32)), uint64(4)
+	sourceDomain, sourceDomainSender, nonce := uint32(1), string(fillByteArray(0, 32)), uint64(4)
 	port, channel, sequence := "5", "10", uint64(0)
 
 	routerKeeper.SetIBCForward(ctx, types.StoreIBCForwardMetadata{
@@ -371,7 +371,7 @@ func TestMintWithExistingForward(t *testing.T) {
 	require.Equal(t, channel, packet.ChannelId)
 	require.Equal(t, sequence, packet.Sequence)
 
-	mint, found := routerKeeper.GetMint(ctx, sourceDomainSender, nonce)
+	mint, found := routerKeeper.GetMint(ctx, sourceDomain, sourceDomainSender, nonce)
 	require.True(t, found)
 	require.Equal(t, sourceDomainSender, mint.SourceDomainSender)
 	require.Equal(t, nonce, mint.Nonce)

@@ -17,7 +17,7 @@ func (k Keeper) IBCForward(c context.Context, req *types.QueryGetIBCForwardReque
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	val, found := k.GetIBCForward(ctx, req.SourceDomainSender, req.Nonce)
+	val, found := k.GetIBCForward(ctx, req.SourceDomain, req.SourceDomainSender, req.Nonce)
 	if !found {
 		return nil, status.Error(codes.NotFound, "not found")
 	}

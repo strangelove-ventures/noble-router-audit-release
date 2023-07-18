@@ -17,7 +17,7 @@ func (k Keeper) Mint(c context.Context, req *types.QueryGetMintRequest) (*types.
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	val, found := k.GetMint(ctx, req.SourceDomainSender, req.Nonce)
+	val, found := k.GetMint(ctx, req.SourceDomain, req.SourceDomainSender, req.Nonce)
 	if !found {
 		return nil, status.Error(codes.NotFound, "not found")
 	}

@@ -18,6 +18,7 @@ var _ = strconv.IntSize
 func createNMint(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.Mint {
 	items := make([]types.Mint, n)
 	for i := range items {
+		items[i].SourceDomain = uint32(i)
 		items[i].SourceDomainSender = strconv.Itoa(i)
 		items[i].Nonce = uint64(i)
 
@@ -32,6 +33,7 @@ func TestMintGet(t *testing.T) {
 	for _, item := range items {
 		rst, found := routerKeeper.GetMint(
 			ctx,
+			item.SourceDomain,
 			item.SourceDomainSender,
 			item.Nonce,
 		)
@@ -49,11 +51,13 @@ func TestMintRemove(t *testing.T) {
 	for _, item := range items {
 		routerKeeper.DeleteMint(
 			ctx,
+			item.SourceDomain,
 			item.SourceDomainSender,
 			item.Nonce,
 		)
 		_, found := routerKeeper.GetMint(
 			ctx,
+			item.SourceDomain,
 			item.SourceDomainSender,
 			item.Nonce,
 		)

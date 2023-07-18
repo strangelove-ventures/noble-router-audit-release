@@ -18,6 +18,7 @@ var _ = strconv.IntSize
 func createNIBCForward(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.StoreIBCForwardMetadata {
 	items := make([]types.StoreIBCForwardMetadata, n)
 	for i := range items {
+		items[i].SourceDomain = uint32(i)
 		items[i].SourceDomainSender = strconv.Itoa(i)
 		items[i].Nonce = uint64(i)
 
@@ -32,6 +33,7 @@ func TestIBCForwardGet(t *testing.T) {
 	for _, item := range items {
 		rst, found := routerKeeper.GetIBCForward(
 			ctx,
+			item.SourceDomain,
 			item.SourceDomainSender,
 			item.Nonce,
 		)
@@ -49,11 +51,13 @@ func TestIBCForwardRemove(t *testing.T) {
 	for _, item := range items {
 		routerKeeper.DeleteIBCForward(
 			ctx,
+			item.SourceDomain,
 			item.SourceDomainSender,
 			item.Nonce,
 		)
 		_, found := routerKeeper.GetIBCForward(
 			ctx,
+			item.SourceDomain,
 			item.SourceDomainSender,
 			item.Nonce,
 		)

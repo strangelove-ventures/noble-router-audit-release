@@ -24,12 +24,14 @@ const (
 	MintKeyPrefix           = "Mint/value/"
 )
 
-func LookupKey(sourceDomainSender string, nonce uint64) []byte {
+func LookupKey(sourceDomain uint32, sourceDomainSender string, nonce uint64) []byte {
 
+	sourceDomainBytes := make([]byte, 4)
+	binary.BigEndian.PutUint32(sourceDomainBytes, sourceDomain)
 	nonceBytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(nonceBytes, nonce)
-
 	combinedBytes := append(nonceBytes, []byte(sourceDomainSender)...)
+
 	hashedKey := crypto.Keccak256(combinedBytes)
 
 	return append(hashedKey, []byte("/")...)

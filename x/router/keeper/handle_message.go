@@ -19,9 +19,9 @@ func (k Keeper) HandleMessage(ctx sdk.Context, msg []byte) error {
 
 	// parse internal message into IBCForward
 	if ibcForward, err := DecodeIBCForward(outerMessage.MessageBody); err == nil {
-		if storedForward, ok := k.GetIBCForward(ctx, string(outerMessage.Sender), outerMessage.Nonce); ok {
+		if storedForward, ok := k.GetIBCForward(ctx, outerMessage.SourceDomain, string(outerMessage.Sender), outerMessage.Nonce); ok {
 			if storedForward.AckError {
-				if existingMint, ok := k.GetMint(ctx, string(outerMessage.Sender), outerMessage.Nonce); ok {
+				if existingMint, ok := k.GetMint(ctx, outerMessage.SourceDomain, string(outerMessage.Sender), outerMessage.Nonce); ok {
 					return k.ForwardPacket(ctx, ibcForward, existingMint)
 				}
 				panic("unexpected state")
@@ -35,7 +35,7 @@ func (k Keeper) HandleMessage(ctx sdk.Context, msg []byte) error {
 			Nonce:              outerMessage.Nonce,
 			Metadata:           &ibcForward,
 		})
-		if existingMint, ok := k.GetMint(ctx, string(outerMessage.Sender), outerMessage.Nonce); ok {
+		if existingMint, ok := k.GetMint(ctx, outerMessage.SourceDomain, string(outerMessage.Sender), outerMessage.Nonce); ok {
 			return k.ForwardPacket(ctx, ibcForward, existingMint)
 		}
 		return nil
@@ -62,7 +62,7 @@ func (k Keeper) HandleMessage(ctx sdk.Context, msg []byte) error {
 			MintRecipient:     string(burnMessage.MintRecipient),
 		}
 		k.SetMint(ctx, mint)
-		if existingIBCForward, found := k.GetIBCForward(ctx, string(burnMessage.MessageSender), outerMessage.Nonce); found {
+		if existingIBCForward, found := k.GetIBCForward(ctx, outerMessage.SourceDomain, string(burnMessage.MessageSender), outerMessage.Nonce); found {
 			return k.ForwardPacket(ctx, *existingIBCForward.Metadata, mint)
 		}
 	}

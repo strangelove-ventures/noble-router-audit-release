@@ -7,7 +7,6 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/strangelove-ventures/noble/x/router/types";
 
 // InFlightPacket contains information about the initially minted funds
-// @param source_domain - source domain id
 // @param source_domain_sender - address of MessageTransmitter caller on source domain
 // @param nonce - unique message nonce
 // @param channel_id - ibc channel

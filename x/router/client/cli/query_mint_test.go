@@ -2,9 +2,10 @@ package cli_test
 
 import (
 	"fmt"
-	"google.golang.org/grpc/codes"
 	"strconv"
 	"testing"
+
+	"google.golang.org/grpc/codes"
 
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/stretchr/testify/require"

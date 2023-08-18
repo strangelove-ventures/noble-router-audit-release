@@ -3,7 +3,6 @@ package interchaintest_test
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"testing"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v3/ibc"
 	"github.com/strangelove-ventures/interchaintest/v3/testreporter"
 	"github.com/strangelove-ventures/interchaintest/v3/testutil"
-	integration "github.com/strangelove-ventures/noble/interchaintest"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
@@ -33,6 +31,7 @@ type ForwardMetadata struct {
 	RefundSequence *uint64       `json:"refund_sequence,omitempty"`
 }
 
+// run `make local-image`to rebuild updated binary before running test
 func TestPacketForwardMiddleware(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
@@ -44,272 +43,23 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		rep                                        = testreporter.NewNopReporter()
 		eRep                                       = rep.RelayerExecReporter(t)
 		chainID_A, chainID_B, chainID_C, chainID_D = "chain-a", "chain-b", "chain-c", "chain-d"
-		repo, version                              = integration.GetDockerImageInfo()
-		chainA, chainB, chainC, chainD             *cosmos.CosmosChain
 		nv                                         = 1
 		nf                                         = 0
-		coinType                                   = "118"
-		nobleRoles1                                NobleRoles
-		nobleRoles2                                NobleRoles
-		nobleRoles3                                NobleRoles
-		nobleRoles4                                NobleRoles
-		paramauthorityWallet1                      Authority
-		paramauthorityWallet2                      Authority
-		paramauthorityWallet3                      Authority
-		paramauthorityWallet4                      Authority
+		gw1, gw2, gw3, gw4                         genesisWrapper
 	)
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		{
-			NumValidators: &nv,
-			NumFullNodes:  &nf,
-			ChainConfig: ibc.ChainConfig{
-				Type:           "cosmos",
-				Name:           "noble",
-				ChainID:        chainID_A,
-				Bin:            "nobled",
-				Denom:          "token",
-				Bech32Prefix:   "noble",
-				CoinType:       coinType,
-				GasPrices:      "0.0token",
-				GasAdjustment:  1.1,
-				TrustingPeriod: "504h",
-				NoHostMount:    false,
-				Images: []ibc.DockerImage{
-					{
-						Repository: repo,
-						Version:    version,
-						UidGid:     "1025:1025",
-					},
-				},
-				EncodingConfig: NobleEncoding(),
-				PreGenesis: func(cc ibc.ChainConfig) error {
-					val := chainA.Validators[0]
-					err := createTokenfactoryRoles(ctx, &nobleRoles1, DenomMetadata_rupee, val, true)
-					if err != nil {
-						return err
-					}
-					err = createTokenfactoryRoles(ctx, &nobleRoles1, DenomMetadata_drachma, val, true)
-					if err != nil {
-						return err
-					}
-					paramauthorityWallet1, err = createParamAuthAtGenesis(ctx, val)
-					return err
-				},
-				ModifyGenesis: func(cc ibc.ChainConfig, b []byte) ([]byte, error) {
-					g := make(map[string]interface{})
-					if err := json.Unmarshal(b, &g); err != nil {
-						return nil, fmt.Errorf("failed to unmarshal genesis file: %w", err)
-					}
-					if err := modifyGenesisTokenfactory(g, "tokenfactory", DenomMetadata_rupee, &nobleRoles1, true); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisTokenfactory(g, "fiat-tokenfactory", DenomMetadata_drachma, &nobleRoles1, true); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisParamAuthority(g, paramauthorityWallet1.Authority.Address); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisTariffDefaults(g, paramauthorityWallet1.Authority.Address); err != nil {
-						return nil, err
-					}
-					out, err := json.Marshal(&g)
-					if err != nil {
-						return nil, fmt.Errorf("failed to marshal genesis bytes to json: %w", err)
-					}
-					return out, nil
-				},
-			},
-		},
-		{
-			NumValidators: &nv,
-			NumFullNodes:  &nf,
-			ChainConfig: ibc.ChainConfig{
-				Type:           "cosmos",
-				Name:           "noble",
-				ChainID:        chainID_B,
-				Bin:            "nobled",
-				Denom:          "token",
-				Bech32Prefix:   "noble",
-				CoinType:       coinType,
-				GasPrices:      "0.0token",
-				GasAdjustment:  1.1,
-				TrustingPeriod: "504h",
-				NoHostMount:    false,
-				Images: []ibc.DockerImage{
-					{
-						Repository: repo,
-						Version:    version,
-						UidGid:     "1025:1025",
-					},
-				},
-				EncodingConfig: NobleEncoding(),
-				PreGenesis: func(cc ibc.ChainConfig) error {
-					val := chainB.Validators[0]
-					err := createTokenfactoryRoles(ctx, &nobleRoles2, DenomMetadata_rupee, val, true)
-					if err != nil {
-						return err
-					}
-					err = createTokenfactoryRoles(ctx, &nobleRoles2, DenomMetadata_drachma, val, true)
-					if err != nil {
-						return err
-					}
-					paramauthorityWallet2, err = createParamAuthAtGenesis(ctx, val)
-					return err
-				},
-				ModifyGenesis: func(cc ibc.ChainConfig, b []byte) ([]byte, error) {
-					g := make(map[string]interface{})
-					if err := json.Unmarshal(b, &g); err != nil {
-						return nil, fmt.Errorf("failed to unmarshal genesis file: %w", err)
-					}
-					if err := modifyGenesisTokenfactory(g, "tokenfactory", DenomMetadata_rupee, &nobleRoles2, true); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisTokenfactory(g, "fiat-tokenfactory", DenomMetadata_drachma, &nobleRoles2, true); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisParamAuthority(g, paramauthorityWallet2.Authority.Address); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisTariffDefaults(g, paramauthorityWallet2.Authority.Address); err != nil {
-						return nil, err
-					}
-					out, err := json.Marshal(&g)
-					if err != nil {
-						return nil, fmt.Errorf("failed to marshal genesis bytes to json: %w", err)
-					}
-					return out, nil
-				},
-			},
-		},
-		{
-			NumValidators: &nv,
-			NumFullNodes:  &nf,
-			ChainConfig: ibc.ChainConfig{
-				Type:           "cosmos",
-				Name:           "noble",
-				ChainID:        chainID_C,
-				Bin:            "nobled",
-				Denom:          "token",
-				Bech32Prefix:   "noble",
-				CoinType:       coinType,
-				GasPrices:      "0.0token",
-				GasAdjustment:  1.1,
-				TrustingPeriod: "504h",
-				NoHostMount:    false,
-				Images: []ibc.DockerImage{
-					{
-						Repository: repo,
-						Version:    version,
-						UidGid:     "1025:1025",
-					},
-				},
-				EncodingConfig: NobleEncoding(),
-				PreGenesis: func(cc ibc.ChainConfig) error {
-					val := chainC.Validators[0]
-					err := createTokenfactoryRoles(ctx, &nobleRoles3, DenomMetadata_rupee, val, true)
-					if err != nil {
-						return err
-					}
-					err = createTokenfactoryRoles(ctx, &nobleRoles3, DenomMetadata_drachma, val, true)
-					if err != nil {
-						return err
-					}
-					paramauthorityWallet3, err = createParamAuthAtGenesis(ctx, val)
-					return err
-				},
-				ModifyGenesis: func(cc ibc.ChainConfig, b []byte) ([]byte, error) {
-					g := make(map[string]interface{})
-					if err := json.Unmarshal(b, &g); err != nil {
-						return nil, fmt.Errorf("failed to unmarshal genesis file: %w", err)
-					}
-					if err := modifyGenesisTokenfactory(g, "tokenfactory", DenomMetadata_rupee, &nobleRoles3, true); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisTokenfactory(g, "fiat-tokenfactory", DenomMetadata_drachma, &nobleRoles3, true); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisParamAuthority(g, paramauthorityWallet3.Authority.Address); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisTariffDefaults(g, paramauthorityWallet3.Authority.Address); err != nil {
-						return nil, err
-					}
-					out, err := json.Marshal(&g)
-					if err != nil {
-						return nil, fmt.Errorf("failed to marshal genesis bytes to json: %w", err)
-					}
-					return out, nil
-				},
-			},
-		},
-		{
-			NumValidators: &nv,
-			NumFullNodes:  &nf,
-			ChainConfig: ibc.ChainConfig{
-				Type:           "cosmos",
-				Name:           "noble",
-				ChainID:        chainID_D,
-				Bin:            "nobled",
-				Denom:          "token",
-				Bech32Prefix:   "noble",
-				CoinType:       coinType,
-				GasPrices:      "0.0token",
-				GasAdjustment:  1.1,
-				TrustingPeriod: "504h",
-				NoHostMount:    false,
-				Images: []ibc.DockerImage{
-					{
-						Repository: repo,
-						Version:    version,
-						UidGid:     "1025:1025",
-					},
-				},
-				EncodingConfig: NobleEncoding(),
-				PreGenesis: func(cc ibc.ChainConfig) error {
-					val := chainD.Validators[0]
-					err := createTokenfactoryRoles(ctx, &nobleRoles4, DenomMetadata_rupee, val, true)
-					if err != nil {
-						return err
-					}
-					err = createTokenfactoryRoles(ctx, &nobleRoles4, DenomMetadata_drachma, val, true)
-					if err != nil {
-						return err
-					}
-					paramauthorityWallet4, err = createParamAuthAtGenesis(ctx, val)
-					return err
-				},
-				ModifyGenesis: func(cc ibc.ChainConfig, b []byte) ([]byte, error) {
-					g := make(map[string]interface{})
-					if err := json.Unmarshal(b, &g); err != nil {
-						return nil, fmt.Errorf("failed to unmarshal genesis file: %w", err)
-					}
-					if err := modifyGenesisTokenfactory(g, "tokenfactory", DenomMetadata_rupee, &nobleRoles4, true); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisTokenfactory(g, "fiat-tokenfactory", DenomMetadata_drachma, &nobleRoles4, true); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisParamAuthority(g, paramauthorityWallet4.Authority.Address); err != nil {
-						return nil, err
-					}
-					if err := modifyGenesisTariffDefaults(g, paramauthorityWallet4.Authority.Address); err != nil {
-						return nil, err
-					}
-					out, err := json.Marshal(&g)
-					if err != nil {
-						return nil, fmt.Errorf("failed to marshal genesis bytes to json: %w", err)
-					}
-					return out, nil
-				},
-			},
-		},
+		nobleChainSpec(ctx, &gw1, chainID_A, nv, nf, true, true, true, true),
+		nobleChainSpec(ctx, &gw2, chainID_B, nv, nf, true, true, true, true),
+		nobleChainSpec(ctx, &gw3, chainID_C, nv, nf, true, true, true, true),
+		nobleChainSpec(ctx, &gw4, chainID_D, nv, nf, true, true, true, true),
 	})
 
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
 
-	chainA, chainB, chainC, chainD = chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain), chains[3].(*cosmos.CosmosChain)
+	gw1.chain, gw2.chain, gw3.chain, gw4.chain = chains[0].(*cosmos.CosmosChain), chains[1].(*cosmos.CosmosChain), chains[2].(*cosmos.CosmosChain), chains[3].(*cosmos.CosmosChain)
+	chainA, chainB, chainC, chainD := gw1.chain, gw2.chain, gw3.chain, gw4.chain
 
 	r := interchaintest.NewBuiltinRelayerFactory(
 		ibc.CosmosRly,
@@ -415,14 +165,14 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		// Send packet from Chain A->Chain B->Chain C->Chain D
 
 		transfer := ibc.WalletAmount{
-			Address: userB.Bech32Address(chainB.Config().Bech32Prefix),
+			Address: userB.FormattedAddress(),
 			Denom:   chainA.Config().Denom,
 			Amount:  transferAmount,
 		}
 
 		secondHopMetadata := &PacketMetadata{
 			Forward: &ForwardMetadata{
-				Receiver: userD.Bech32Address(chainD.Config().Bech32Prefix),
+				Receiver: userD.FormattedAddress(),
 				Channel:  cdChan.ChannelID,
 				Port:     cdChan.PortID,
 			},
@@ -433,7 +183,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 		firstHopMetadata := &PacketMetadata{
 			Forward: &ForwardMetadata{
-				Receiver: userC.Bech32Address(chainC.Config().Bech32Prefix),
+				Receiver: userC.FormattedAddress(),
 				Channel:  bcChan.ChannelID,
 				Port:     bcChan.PortID,
 				Next:     &next,
@@ -446,23 +196,23 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		chainAHeight, err := chainA.Height(ctx)
 		require.NoError(t, err)
 
-		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName, transfer, ibc.TransferOptions{Memo: string(memo)})
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
 		err = testutil.WaitForBlocks(ctx, 1, chainA)
 		require.NoError(t, err)
 
-		chainABalance, err := chainA.GetBalance(ctx, userA.Bech32Address(chainA.Config().Bech32Prefix), chainA.Config().Denom)
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
 		require.NoError(t, err)
 
-		chainBBalance, err := chainB.GetBalance(ctx, userB.Bech32Address(chainB.Config().Bech32Prefix), firstHopIBCDenom)
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
 		require.NoError(t, err)
 
-		chainCBalance, err := chainC.GetBalance(ctx, userC.Bech32Address(chainC.Config().Bech32Prefix), secondHopIBCDenom)
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 		require.NoError(t, err)
 
-		chainDBalance, err := chainD.GetBalance(ctx, userD.Bech32Address(chainD.Config().Bech32Prefix), thirdHopIBCDenom)
+		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
 		require.NoError(t, err)
 
 		require.Equal(t, userFunds-transferAmount, chainABalance)
@@ -487,14 +237,14 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	t.Run("multi-hop denom unwind d->c->b->a", func(t *testing.T) {
 		// Send packet back from Chain D->Chain C->Chain B->Chain A
 		transfer := ibc.WalletAmount{
-			Address: userC.Bech32Address(chainC.Config().Bech32Prefix),
+			Address: userC.FormattedAddress(),
 			Denom:   thirdHopIBCDenom,
 			Amount:  transferAmount,
 		}
 
 		secondHopMetadata := &PacketMetadata{
 			Forward: &ForwardMetadata{
-				Receiver: userA.Bech32Address(chainA.Config().Bech32Prefix),
+				Receiver: userA.FormattedAddress(),
 				Channel:  baChan.ChannelID,
 				Port:     baChan.PortID,
 			},
@@ -507,7 +257,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 		firstHopMetadata := &PacketMetadata{
 			Forward: &ForwardMetadata{
-				Receiver: userB.Bech32Address(chainB.Config().Bech32Prefix),
+				Receiver: userB.FormattedAddress(),
 				Channel:  cbChan.ChannelID,
 				Port:     cbChan.PortID,
 				Next:     &next,
@@ -520,7 +270,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		chainDHeight, err := chainD.Height(ctx)
 		require.NoError(t, err)
 
-		transferTx, err := chainD.SendIBCTransfer(ctx, dcChan.ChannelID, userD.KeyName, transfer, ibc.TransferOptions{Memo: string(memo)})
+		transferTx, err := chainD.SendIBCTransfer(ctx, dcChan.ChannelID, userD.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainD, chainDHeight, chainDHeight+30, transferTx.Packet)
 		require.NoError(t, err)
@@ -528,16 +278,16 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
-		chainDBalance, err := chainD.GetBalance(ctx, userD.Bech32Address(chainD.Config().Bech32Prefix), thirdHopIBCDenom)
+		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
 		require.NoError(t, err)
 
-		chainCBalance, err := chainC.GetBalance(ctx, userC.Bech32Address(chainC.Config().Bech32Prefix), secondHopIBCDenom)
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 		require.NoError(t, err)
 
-		chainBBalance, err := chainB.GetBalance(ctx, userB.Bech32Address(chainB.Config().Bech32Prefix), firstHopIBCDenom)
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
 		require.NoError(t, err)
 
-		chainABalance, err := chainA.GetBalance(ctx, userA.Bech32Address(chainA.Config().Bech32Prefix), chainA.Config().Denom)
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
 		require.NoError(t, err)
 
 		require.Equal(t, int64(0), chainDBalance)
@@ -564,7 +314,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		// Send a malformed packet with invalid receiver address from Chain A->Chain B->Chain C
 		// This should succeed in the first hop and fail to make the second hop; funds should then be refunded to Chain A.
 		transfer := ibc.WalletAmount{
-			Address: userB.Bech32Address(chainB.Config().Bech32Prefix),
+			Address: userB.FormattedAddress(),
 			Denom:   chainA.Config().Denom,
 			Amount:  transferAmount,
 		}
@@ -583,7 +333,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		chainAHeight, err := chainA.Height(ctx)
 		require.NoError(t, err)
 
-		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName, transfer, ibc.TransferOptions{Memo: string(memo)})
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
 		require.NoError(t, err)
@@ -591,13 +341,13 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
-		chainABalance, err := chainA.GetBalance(ctx, userA.Bech32Address(chainA.Config().Bech32Prefix), chainA.Config().Denom)
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
 		require.NoError(t, err)
 
-		chainBBalance, err := chainB.GetBalance(ctx, userB.Bech32Address(chainB.Config().Bech32Prefix), firstHopIBCDenom)
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
 		require.NoError(t, err)
 
-		chainCBalance, err := chainC.GetBalance(ctx, userC.Bech32Address(chainC.Config().Bech32Prefix), secondHopIBCDenom)
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 		require.NoError(t, err)
 
 		require.Equal(t, userFunds, chainABalance)
@@ -618,7 +368,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 	t.Run("forward timeout refund", func(t *testing.T) {
 		// Send packet from Chain A->Chain B->Chain C with the timeout so low for B->C transfer that it can not make it from B to C, which should result in a refund from B to A after two retries.
 		transfer := ibc.WalletAmount{
-			Address: userB.Bech32Address(chainB.Config().Bech32Prefix),
+			Address: userB.FormattedAddress(),
 			Denom:   chainA.Config().Denom,
 			Amount:  transferAmount,
 		}
@@ -626,7 +376,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		retries := uint8(2)
 		metadata := &PacketMetadata{
 			Forward: &ForwardMetadata{
-				Receiver: userC.Bech32Address(chainC.Config().Bech32Prefix),
+				Receiver: userC.FormattedAddress(),
 				Channel:  bcChan.ChannelID,
 				Port:     bcChan.PortID,
 				Retries:  &retries,
@@ -640,7 +390,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		chainAHeight, err := chainA.Height(ctx)
 		require.NoError(t, err)
 
-		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName, transfer, ibc.TransferOptions{Memo: string(memo)})
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+25, transferTx.Packet)
 		require.NoError(t, err)
@@ -648,13 +398,13 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
-		chainABalance, err := chainA.GetBalance(ctx, userA.Bech32Address(chainA.Config().Bech32Prefix), chainA.Config().Denom)
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
 		require.NoError(t, err)
 
-		chainBBalance, err := chainB.GetBalance(ctx, userB.Bech32Address(chainB.Config().Bech32Prefix), firstHopIBCDenom)
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
 		require.NoError(t, err)
 
-		chainCBalance, err := chainC.GetBalance(ctx, userC.Bech32Address(chainC.Config().Bech32Prefix), secondHopIBCDenom)
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 		require.NoError(t, err)
 
 		require.Equal(t, userFunds, chainABalance)
@@ -676,7 +426,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		// This should succeed in the first hop and second hop, then fail to make the third hop.
 		// Funds should be refunded to Chain B and then to Chain A via acknowledgements with errors.
 		transfer := ibc.WalletAmount{
-			Address: userB.Bech32Address(chainB.Config().Bech32Prefix),
+			Address: userB.FormattedAddress(),
 			Denom:   chainA.Config().Denom,
 			Amount:  transferAmount,
 		}
@@ -696,7 +446,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 		firstHopMetadata := &PacketMetadata{
 			Forward: &ForwardMetadata{
-				Receiver: userC.Bech32Address(chainC.Config().Bech32Prefix),
+				Receiver: userC.FormattedAddress(),
 				Channel:  bcChan.ChannelID,
 				Port:     bcChan.PortID,
 				Next:     &next,
@@ -709,7 +459,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		chainAHeight, err := chainA.Height(ctx)
 		require.NoError(t, err)
 
-		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName, transfer, ibc.TransferOptions{Memo: string(memo)})
+		transferTx, err := chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
@@ -717,16 +467,16 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
-		chainDBalance, err := chainD.GetBalance(ctx, userD.Bech32Address(chainD.Config().Bech32Prefix), thirdHopIBCDenom)
+		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), thirdHopIBCDenom)
 		require.NoError(t, err)
 
-		chainCBalance, err := chainC.GetBalance(ctx, userC.Bech32Address(chainC.Config().Bech32Prefix), secondHopIBCDenom)
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), secondHopIBCDenom)
 		require.NoError(t, err)
 
-		chainBBalance, err := chainB.GetBalance(ctx, userB.Bech32Address(chainB.Config().Bech32Prefix), firstHopIBCDenom)
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), firstHopIBCDenom)
 		require.NoError(t, err)
 
-		chainABalance, err := chainA.GetBalance(ctx, userA.Bech32Address(chainA.Config().Bech32Prefix), chainA.Config().Denom)
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), chainA.Config().Denom)
 		require.NoError(t, err)
 
 		require.Equal(t, userFunds, chainABalance)
@@ -767,7 +517,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		cdIBCDenom := cdDenomTrace.IBCDenom()
 
 		transfer := ibc.WalletAmount{
-			Address: userA.Bech32Address(chainA.Config().Bech32Prefix),
+			Address: userA.FormattedAddress(),
 			Denom:   chainB.Config().Denom,
 			Amount:  transferAmount,
 		}
@@ -775,7 +525,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		chainBHeight, err := chainB.Height(ctx)
 		require.NoError(t, err)
 
-		transferTx, err := chainB.SendIBCTransfer(ctx, baChan.ChannelID, userB.KeyName, transfer, ibc.TransferOptions{})
+		transferTx, err := chainB.SendIBCTransfer(ctx, baChan.ChannelID, userB.KeyName(), transfer, ibc.TransferOptions{})
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainB, chainBHeight, chainBHeight+10, transferTx.Packet)
 		require.NoError(t, err)
@@ -783,7 +533,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 
 		// assert balance for user controlled wallet
-		chainABalance, err := chainA.GetBalance(ctx, userA.Bech32Address(chainA.Config().Bech32Prefix), baIBCDenom)
+		chainABalance, err := chainA.GetBalance(ctx, userA.FormattedAddress(), baIBCDenom)
 		require.NoError(t, err)
 
 		baEscrowBalance, err := chainB.GetBalance(
@@ -800,7 +550,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		// This should succeed in the first hop and second hop, then fail to make the third hop.
 		// Funds should be refunded to Chain B and then to Chain A via acknowledgements with errors.
 		transfer = ibc.WalletAmount{
-			Address: userB.Bech32Address(chainB.Config().Bech32Prefix),
+			Address: userB.FormattedAddress(),
 			Denom:   baIBCDenom,
 			Amount:  transferAmount,
 		}
@@ -820,7 +570,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 
 		firstHopMetadata := &PacketMetadata{
 			Forward: &ForwardMetadata{
-				Receiver: userC.Bech32Address(chainC.Config().Bech32Prefix),
+				Receiver: userC.FormattedAddress(),
 				Channel:  bcChan.ChannelID,
 				Port:     bcChan.PortID,
 				Next:     &next,
@@ -833,7 +583,7 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		chainAHeight, err := chainA.Height(ctx)
 		require.NoError(t, err)
 
-		transferTx, err = chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName, transfer, ibc.TransferOptions{Memo: string(memo)})
+		transferTx, err = chainA.SendIBCTransfer(ctx, abChan.ChannelID, userA.KeyName(), transfer, ibc.TransferOptions{Memo: string(memo)})
 		require.NoError(t, err)
 		_, err = testutil.PollForAck(ctx, chainA, chainAHeight, chainAHeight+30, transferTx.Packet)
 		require.NoError(t, err)
@@ -841,16 +591,16 @@ func TestPacketForwardMiddleware(t *testing.T) {
 		require.NoError(t, err)
 
 		// assert balances for user controlled wallets
-		chainDBalance, err := chainD.GetBalance(ctx, userD.Bech32Address(chainD.Config().Bech32Prefix), cdIBCDenom)
+		chainDBalance, err := chainD.GetBalance(ctx, userD.FormattedAddress(), cdIBCDenom)
 		require.NoError(t, err)
 
-		chainCBalance, err := chainC.GetBalance(ctx, userC.Bech32Address(chainC.Config().Bech32Prefix), bcIBCDenom)
+		chainCBalance, err := chainC.GetBalance(ctx, userC.FormattedAddress(), bcIBCDenom)
 		require.NoError(t, err)
 
-		chainBBalance, err := chainB.GetBalance(ctx, userB.Bech32Address(chainB.Config().Bech32Prefix), chainB.Config().Denom)
+		chainBBalance, err := chainB.GetBalance(ctx, userB.FormattedAddress(), chainB.Config().Denom)
 		require.NoError(t, err)
 
-		chainABalance, err = chainA.GetBalance(ctx, userA.Bech32Address(chainA.Config().Bech32Prefix), baIBCDenom)
+		chainABalance, err = chainA.GetBalance(ctx, userA.FormattedAddress(), baIBCDenom)
 		require.NoError(t, err)
 
 		require.Equal(t, transferAmount, chainABalance)

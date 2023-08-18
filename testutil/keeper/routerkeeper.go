@@ -38,6 +38,7 @@ func RouterKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 		cdc,
 		storeKey,
 		paramsSubspace,
+		MockCctpKeeper{},
 		MockTransferKeeper{},
 	)
 
@@ -47,4 +48,10 @@ func RouterKeeper(t testing.TB) (*keeper.Keeper, sdk.Context) {
 	k.SetParams(ctx, types.DefaultParams())
 
 	return k, ctx
+}
+
+type MockRouterKeeper struct{}
+
+func (MockRouterKeeper) HandleMessage(sdk.Context, []byte) error {
+	return nil
 }

@@ -25,3 +25,10 @@ func (MockBankKeeper) SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr s
 func (MockBankKeeper) GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool) {
 	return banktypes.Metadata{}, true
 }
+
+func (MockBankKeeper) GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin {
+	return sdk.Coin{
+		Denom:  "uusdc",
+		Amount: sdk.Int{},
+	}
+}

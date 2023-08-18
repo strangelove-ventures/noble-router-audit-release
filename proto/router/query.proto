@@ -17,23 +17,23 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/noble/router/params";
   }
-  // Queries a Mint by source_domain_sender and nonce
+  // Queries a Mint by source_contract_address and nonce
   rpc Mint(QueryGetMintRequest) returns (QueryGetMintResponse) {
-    option (google.api.http).get = "/noble/router/mint/{source_domain_sender}/{nonce}";
+    option (google.api.http).get = "/noble/router/mint/{source_domain}/{source_domain_sender}/{nonce}";
   }
   // Queries a list of Mints
   rpc Mints(QueryAllMintsRequest) returns (QueryAllMintsResponse) {
     option (google.api.http).get = "/noble/router/mint";
   }
-  // Queries an IBCForward by source_domain, source_domain_sender and nonce
+  // Queries an IBCForward by source_contract_address and nonce
   rpc IBCForward(QueryGetIBCForwardRequest) returns (QueryGetIBCForwardResponse) {
-    option (google.api.http).get = "/noble/router/ibc_forward/{source_domain_sender}/{nonce}";
+    option (google.api.http).get = "/noble/router/ibc_forward/{source_domain}/{source_domain_sender}/{nonce}";
   }
   // Queries a list of IBCForwards
   rpc IBCForwards(QueryAllIBCForwardsRequest) returns (QueryAllIBCForwardsResponse) {
     option (google.api.http).get = "/noble/router/ibc_forward";
   }
-  // Queries an InFlightPacket by source_domain_sender and nonce
+  // Queries an InFlightPacket by source_contract_address and nonce
   rpc InFlightPacket(QueryGetInFlightPacketRequest) returns (QueryGetInFlightPacketResponse) {
     option (google.api.http).get = "/noble/router/in_flight_packets/{channel_id}/{port_id}/{sequence}";
   }
@@ -76,7 +76,7 @@ message QueryGetIBCForwardRequest {
 }
 
 message QueryGetIBCForwardResponse {
-  StoreIBCForwardMetadata ibc_forward = 1 [(gogoproto.nullable) = false];
+  StoreIBCForwardMetadata ibcForward = 1 [(gogoproto.nullable) = false];
 }
 
 message QueryAllIBCForwardsRequest {
@@ -84,7 +84,7 @@ message QueryAllIBCForwardsRequest {
 }
 
 message QueryAllIBCForwardsResponse {
-  repeated StoreIBCForwardMetadata ibc_forwards = 1 [(gogoproto.nullable) = false];
+  repeated StoreIBCForwardMetadata ibcForwards = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

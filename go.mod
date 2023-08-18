@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	cosmossdk.io/errors v1.0.0-beta.7
+	cosmossdk.io/math v1.0.0-beta.4
 	github.com/cosmos/cosmos-sdk v0.45.15
 	github.com/cosmos/ibc-go/v3 v3.4.0
 	github.com/ethereum/go-ethereum v1.10.17
@@ -14,9 +15,8 @@ require (
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
-	github.com/strangelove-ventures/noble-cctp v0.0.0-20230717222018-9c1d9c069b5a
-	github.com/strangelove-ventures/packet-forward-middleware/v3 v3.1.4
-	github.com/strangelove-ventures/paramauthority v0.1.1
+	github.com/strangelove-ventures/packet-forward-middleware/v3 v3.1.5
+	github.com/strangelove-ventures/paramauthority v0.2.0
 	github.com/stretchr/testify v1.8.1
 	github.com/tendermint/tendermint v0.34.27
 	github.com/tendermint/tm-db v0.6.7
@@ -146,6 +146,9 @@ require (
 )
 
 replace (
+	// huckleberry patch for ibc-go v3
+	github.com/cosmos/ibc-go/v3 => github.com/noble-assets/ibc-go/v3 v3.4.0-huckleberry
+
 	// use cosmos-flavored protocol buffers
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
@@ -154,4 +157,5 @@ replace (
 
 	// use grpc version that's compatible with cosmos-flavored protocol buffers
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
+
 )

@@ -26,6 +26,7 @@ import (
 	"github.com/strangelove-ventures/noble/app"
 	"github.com/strangelove-ventures/noble/cmd"
 	"github.com/strangelove-ventures/noble/testutil/sample"
+	cctptypes "github.com/strangelove-ventures/noble/x/cctp/types"
 	paramauthoritytypes "github.com/strangelove-ventures/paramauthority/x/params/types/proposal"
 	paramauthorityupgradetypes "github.com/strangelove-ventures/paramauthority/x/upgrade/types"
 )
@@ -101,6 +102,13 @@ func DefaultConfig() network.Config {
 	upgrade := paramauthorityupgradetypes.DefaultGenesis()
 	upgrade.Params.Authority = sample.AccAddress()
 	cfg.GenesisState[upgradetypes.ModuleName] = encoding.Marshaler.MustMarshalJSON(upgrade)
+
+	cctp := cctptypes.DefaultGenesis()
+	cctp.Authority = sample.AccAddress()
+	cctp.AttesterManager = sample.AccAddress()
+	cctp.Pauser = sample.AccAddress()
+	cctp.TokenController = sample.AccAddress()
+	cfg.GenesisState[cctptypes.ModuleName] = encoding.Marshaler.MustMarshalJSON(cctp)
 
 	return cfg
 }

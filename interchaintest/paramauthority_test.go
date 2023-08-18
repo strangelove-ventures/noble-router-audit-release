@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 	"github.com/icza/dyno"
 	"github.com/strangelove-ventures/interchaintest/v3"
@@ -14,7 +13,6 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v3/ibc"
 	"github.com/strangelove-ventures/interchaintest/v3/testreporter"
 	"github.com/strangelove-ventures/noble/cmd"
-	integration "github.com/strangelove-ventures/noble/interchaintest"
 	proposaltypes "github.com/strangelove-ventures/paramauthority/x/params/types/proposal"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
@@ -29,10 +27,10 @@ type ParamsCase struct {
 	shouldSucceed bool
 }
 
-func testParamsCase(t *testing.T, ctx context.Context, broadcaster *cosmos.Broadcaster, testCase ParamsCase) {
+func testParamsCase(t *testing.T, ctx context.Context, broadcaster *cosmos.Broadcaster, testCase ParamsCase, chainCfg ibc.ChainConfig) {
 	t.Logf(
 		"SIGNER: %s\nMSG AUTHORITY: %s\n",
-		testCase.signer.Address,
+		testCase.signer.FormattedAddress(),
 		testCase.msgAuthority,
 	)
 	msgUpdateParams := proposaltypes.MsgUpdateParams{
@@ -49,13 +47,12 @@ func testParamsCase(t *testing.T, ctx context.Context, broadcaster *cosmos.Broad
 		Authority: testCase.msgAuthority,
 	}
 
-	decoded := sdk.MustAccAddressFromBech32(testCase.signer.Address)
-	wallet := &ibc.Wallet{
-		Address:  string(decoded),
-		Mnemonic: testCase.signer.Mnemonic,
-		KeyName:  testCase.signer.KeyName,
-		CoinType: testCase.signer.CoinType,
-	}
+	wallet := cosmos.NewWallet(
+		testCase.signer.KeyName(),
+		testCase.signer.Address(),
+		testCase.signer.Mnemonic(),
+		chainCfg,
+	)
 
 	tx, err := cosmos.BroadcastTx(
 		ctx,
@@ -74,6 +71,7 @@ func testParamsCase(t *testing.T, ctx context.Context, broadcaster *cosmos.Broad
 	}
 }
 
+// run `make local-image`to rebuild updated binary before running test
 func TestNobleParamAuthority(t *testing.T) {
 	if testing.Short() {
 		t.Skip()
@@ -88,90 +86,17 @@ func TestNobleParamAuthority(t *testing.T) {
 
 	client, network := interchaintest.DockerSetup(t)
 
-	repo, version := integration.GetDockerImageInfo()
-
-	var noble *cosmos.CosmosChain
-	var roles NobleRoles
-	var paramauthorityWallet Authority
-	var extraWallets ExtraWallets
-
-	chainCfg := ibc.ChainConfig{
-		Type:           "cosmos",
-		Name:           "noble",
-		ChainID:        "noble-1",
-		Bin:            "nobled",
-		Denom:          "token",
-		Bech32Prefix:   "noble",
-		CoinType:       "118",
-		GasPrices:      "0.0token",
-		GasAdjustment:  1.1,
-		TrustingPeriod: "504h",
-		NoHostMount:    false,
-		Images: []ibc.DockerImage{
-			{
-				Repository: repo,
-				Version:    version,
-				UidGid:     "1025:1025",
-			},
-		},
-		EncodingConfig: NobleEncoding(),
-		PreGenesis: func(cc ibc.ChainConfig) error {
-			val := noble.Validators[0]
-			err := createTokenfactoryRoles(ctx, &roles, DenomMetadata_rupee, val, true)
-			if err != nil {
-				return err
-			}
-			err = createTokenfactoryRoles(ctx, &roles, DenomMetadata_drachma, val, true)
-			if err != nil {
-				return err
-			}
-			extraWallets, err = createExtraWalletsAtGenesis(ctx, val)
-			if err != nil {
-				return err
-			}
-			paramauthorityWallet, err = createParamAuthAtGenesis(ctx, val)
-			return err
-		},
-		ModifyGenesis: func(cc ibc.ChainConfig, b []byte) ([]byte, error) {
-			g := make(map[string]interface{})
-			if err := json.Unmarshal(b, &g); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal genesis file: %w", err)
-			}
-			if err := modifyGenesisTokenfactory(g, "tokenfactory", DenomMetadata_rupee, &roles, true); err != nil {
-				return nil, err
-			}
-			if err := modifyGenesisTokenfactory(g, "fiat-tokenfactory", DenomMetadata_drachma, &roles, true); err != nil {
-				return nil, err
-			}
-			if err := modifyGenesisParamAuthority(g, paramauthorityWallet.Authority.Address); err != nil {
-				return nil, err
-			}
-			if err := modifyGenesisTariffDefaults(g, paramauthorityWallet.Authority.Address); err != nil {
-				return nil, err
-			}
-			out, err := json.Marshal(&g)
-			if err != nil {
-				return nil, fmt.Errorf("failed to marshal genesis bytes to json: %w", err)
-			}
-			return out, nil
-		},
-	}
-
-	nv := 1
-	nf := 0
+	var gw genesisWrapper
 
 	cf := interchaintest.NewBuiltinChainFactory(zaptest.NewLogger(t), []*interchaintest.ChainSpec{
-		{
-			ChainConfig:   chainCfg,
-			NumValidators: &nv,
-			NumFullNodes:  &nf,
-		},
+		nobleChainSpec(ctx, &gw, "noble-1", 1, 0, true, true, true, true),
 	})
 
 	chains, err := cf.Chains(t.Name())
 	require.NoError(t, err)
 
-	noble = chains[0].(*cosmos.CosmosChain)
+	gw.chain = chains[0].(*cosmos.CosmosChain)
+	noble := gw.chain
 
 	ic := interchaintest.NewInterchain().
 		AddChain(noble)
@@ -187,6 +112,8 @@ func TestNobleParamAuthority(t *testing.T) {
 		_ = ic.Close()
 	})
 
+	chainCfg := noble.Config()
+
 	cmd.SetPrefixes(chainCfg.Bech32Prefix)
 
 	broadcaster := cosmos.NewBroadcaster(t, noble)
@@ -195,56 +122,56 @@ func TestNobleParamAuthority(t *testing.T) {
 		{
 			title:         "change authority to alice from incorrect msg authority and signer",
 			description:   "change params and upgrade authority to alice's address",
-			newAuthority:  extraWallets.Alice.Address,
-			msgAuthority:  extraWallets.User.Address, // matches signer, but this is not the params authority.
-			signer:        extraWallets.User,
+			newAuthority:  gw.extraWallets.Alice.FormattedAddress(),
+			msgAuthority:  gw.extraWallets.User.FormattedAddress(), // matches signer, but this is not the params authority.
+			signer:        gw.extraWallets.User,
 			shouldSucceed: false,
 		},
 		{
 			title:         "change authority to alice from correct signer but incorrect msg authority",
 			description:   "change params and upgrade authority to alice's address",
-			newAuthority:  extraWallets.Alice.Address,
-			msgAuthority:  extraWallets.User.Address,      // this is not the params authority.
-			signer:        paramauthorityWallet.Authority, // this is the params authority, but does not match msgAuthority
+			newAuthority:  gw.extraWallets.Alice.FormattedAddress(),
+			msgAuthority:  gw.extraWallets.User.FormattedAddress(), // this is not the params authority.
+			signer:        gw.paramAuthority,                       // this is the params authority, but does not match msgAuthority
 			shouldSucceed: false,
 		},
 		{
 			title:         "change authority to alice from correct msg authority but incorrect signer",
 			description:   "change params and upgrade authority to alice's address",
-			newAuthority:  extraWallets.Alice.Address,
-			msgAuthority:  paramauthorityWallet.Authority.Address, // this is the params authority.
-			signer:        extraWallets.User,                      // this is not the params authority.
+			newAuthority:  gw.extraWallets.Alice.FormattedAddress(),
+			msgAuthority:  gw.paramAuthority.FormattedAddress(), // this is the params authority.
+			signer:        gw.extraWallets.User,                 // this is not the params authority.
 			shouldSucceed: false,
 		},
 		{
 			title:         "change authority to alice from correct signer and msg authority",
 			description:   "change params and upgrade authority to alice's address",
-			newAuthority:  extraWallets.Alice.Address,
-			msgAuthority:  paramauthorityWallet.Authority.Address, // this is the params authority.
-			signer:        paramauthorityWallet.Authority,         // this is the params authority.
+			newAuthority:  gw.extraWallets.Alice.FormattedAddress(),
+			msgAuthority:  gw.paramAuthority.FormattedAddress(), // this is the params authority.
+			signer:        gw.paramAuthority,                    // this is the params authority.
 			shouldSucceed: true,
 		},
 		{
 			title:         "change authority to user2 from prior authority",
 			description:   "change params and upgrade authority to user2's address",
-			newAuthority:  extraWallets.User2.Address,
-			msgAuthority:  paramauthorityWallet.Authority.Address, // this account is no longer the params authority.
-			signer:        paramauthorityWallet.Authority,         // this account is no longer the params authority.
+			newAuthority:  gw.extraWallets.User2.FormattedAddress(),
+			msgAuthority:  gw.paramAuthority.FormattedAddress(), // this account is no longer the params authority.
+			signer:        gw.paramAuthority,                    // this account is no longer the params authority.
 			shouldSucceed: false,
 		},
 		{
 			title:         "change authority to user2 from new authority",
 			description:   "change params and upgrade authority to user2's address",
-			newAuthority:  extraWallets.User2.Address,
-			msgAuthority:  extraWallets.Alice.Address, // this account is the new params authority.
-			signer:        extraWallets.Alice,         // this account is the new params authority.
+			newAuthority:  gw.extraWallets.User2.FormattedAddress(),
+			msgAuthority:  gw.extraWallets.Alice.FormattedAddress(), // this account is the new params authority.
+			signer:        gw.extraWallets.Alice,                    // this account is the new params authority.
 			shouldSucceed: true,
 		},
 	}
 
 	for _, testCase := range orderedTestCases {
 		t.Run(testCase.title, func(t *testing.T) {
-			testParamsCase(t, ctx, broadcaster, testCase)
+			testParamsCase(t, ctx, broadcaster, testCase, chainCfg)
 		})
 	}
 
@@ -264,6 +191,6 @@ func TestNobleParamAuthority(t *testing.T) {
 	authority, err := dyno.Get(gs, "app_state", "params", "params", "authority")
 	require.NoError(t, err, "failed to get authority from state export")
 
-	require.Equal(t, extraWallets.User2.Address, authority, "authority does not match")
+	require.Equal(t, gw.extraWallets.User2.FormattedAddress(), authority, "authority does not match")
 
 }

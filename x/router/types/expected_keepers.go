@@ -2,9 +2,10 @@ package types
 
 import (
 	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
-	cctptypes "github.com/strangelove-ventures/noble-cctp/x/cctp/types"
+	cctptypes "github.com/strangelove-ventures/noble/x/cctp/types"
 )
 
 // TransferKeeper defines the expected transfer keeper
@@ -14,5 +15,5 @@ type TransferKeeper interface {
 
 // CctpKeeper defines the expected cctp keeper
 type CctpKeeper interface {
-	GetTokenPair(ctx sdk.Context, remoteDomain uint32, remoteToken string) (val cctptypes.TokenPairs, found bool)
+	GetTokenPair(ctx sdk.Context, remoteDomain uint32, remoteToken []byte) (val cctptypes.TokenPair, found bool)
 }

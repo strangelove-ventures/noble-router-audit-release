@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/binary"
 	"fmt"
+
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -16,16 +17,12 @@ const (
 	// RouterKey defines the module's message routing key
 	RouterKey = StoreKey
 
-	// MemStoreKey defines the in-memory store key
-	MemStoreKey = "mem_" + StoreKey
-
 	IBCForwardKeyPrefix     = "IBCForward/value/"
 	InFlightPacketKeyPrefix = "InFlightPacket/value/"
 	MintKeyPrefix           = "Mint/value/"
 )
 
 func LookupKey(sourceDomain uint32, sourceDomainSender string, nonce uint64) []byte {
-
 	sourceDomainBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(sourceDomainBytes, sourceDomain)
 	nonceBytes := make([]byte, 8)

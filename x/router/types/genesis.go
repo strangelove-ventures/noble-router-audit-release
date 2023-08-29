@@ -26,6 +26,11 @@ func (gs GenesisState) Validate() error {
 			return fmt.Errorf("duplicated index for InFlightPackets")
 		}
 		inFlightPacketsIndexMap[index] = struct{}{}
+
+		// Validate the element to ensure semantic correctness
+		if err := elem.Validate(); err != nil {
+			return err
+		}
 	}
 
 	// Check for duplicated index in mints
@@ -36,6 +41,11 @@ func (gs GenesisState) Validate() error {
 			return fmt.Errorf("duplicated index for Mints")
 		}
 		mintsIndexMap[index] = struct{}{}
+
+		// Validate the element to ensure semantic correctness
+		if err := elem.Validate(); err != nil {
+			return err
+		}
 	}
 
 	// Check for duplicated index in ibcForwards
@@ -46,6 +56,11 @@ func (gs GenesisState) Validate() error {
 			return fmt.Errorf("duplicated index for IBCForwards")
 		}
 		ibcForwardsIndexMap[index] = struct{}{}
+
+		// Validate the element to ensure semantic correctness
+		if err := elem.Validate(); err != nil {
+			return err
+		}
 	}
 
 	return gs.Params.Validate()

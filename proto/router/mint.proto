@@ -18,6 +18,6 @@ message Mint {
   string source_domain_sender = 2;
   uint64 nonce = 3;
   cosmos.base.v1beta1.Coin amount = 4;
-  string destination_domain = 5;
+  uint32 destination_domain = 5;
   string mint_recipient = 6;
 }

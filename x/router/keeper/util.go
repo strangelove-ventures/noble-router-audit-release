@@ -56,7 +56,11 @@ const (
 func DecodeIBCForward(msg []byte) (types.IBCForwardMetadata, error) {
 	var res types.IBCForwardMetadata
 	if err := proto.Unmarshal(msg, &res); err != nil {
-		return types.IBCForwardMetadata{}, sdkerrors.Wrapf(types.ErrDecodingIBCForward, "error decoding ibc forward")
+		return types.IBCForwardMetadata{}, sdkerrors.Wrap(types.ErrDecodingIBCForward, err.Error())
+	}
+
+	if err := res.Validate(); err != nil {
+		return types.IBCForwardMetadata{}, sdkerrors.Wrap(types.ErrDecodingIBCForward, err.Error())
 	}
 
 	return res, nil

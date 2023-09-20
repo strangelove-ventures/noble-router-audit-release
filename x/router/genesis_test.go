@@ -15,26 +15,38 @@ func TestGenesis(t *testing.T) {
 		Params: types.DefaultParams(),
 		InFlightPackets: []types.InFlightPacket{
 			{
-				SourceDomainSender: "1",
+				SourceDomain: 1,
 			},
 			{
-				SourceDomainSender: "2",
+				SourceDomain: 2,
 			},
 		},
 		Mints: []types.Mint{
 			{
-				SourceDomainSender: "3",
+				SourceDomain: 3,
 			},
 			{
-				SourceDomainSender: "4",
+				SourceDomain: 4,
 			},
 		},
 		IbcForwards: []types.StoreIBCForwardMetadata{
 			{
-				SourceDomainSender: "5",
+				SourceDomain: 5,
+				Metadata:     &types.IBCForwardMetadata{Nonce: 5},
 			},
 			{
-				SourceDomainSender: "6",
+				SourceDomain: 6,
+				Metadata:     &types.IBCForwardMetadata{Nonce: 6},
+			},
+		},
+		AllowedSourceDomainSenders: []types.AllowedSourceDomainSender{
+			{
+				DomainId: 7,
+				Address:  []byte{0x01},
+			},
+			{
+				DomainId: 8,
+				Address:  []byte{0x02},
 			},
 		},
 	}
@@ -50,4 +62,5 @@ func TestGenesis(t *testing.T) {
 	require.ElementsMatch(t, genesisState.InFlightPackets, got.InFlightPackets)
 	require.ElementsMatch(t, genesisState.Mints, got.Mints)
 	require.ElementsMatch(t, genesisState.IbcForwards, got.IbcForwards)
+	require.ElementsMatch(t, genesisState.AllowedSourceDomainSenders, got.AllowedSourceDomainSenders)
 }

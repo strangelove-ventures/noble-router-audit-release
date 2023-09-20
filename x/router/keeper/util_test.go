@@ -6,15 +6,18 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/gogo/protobuf/proto"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	channelTypes "github.com/cosmos/ibc-go/v3/modules/core/04-channel/types"
+	"github.com/strangelove-ventures/noble/testutil/nullify"
+	"github.com/strangelove-ventures/noble/testutil/sample"
 	"github.com/strangelove-ventures/noble/x/router/keeper"
 	"github.com/strangelove-ventures/noble/x/router/types"
-
-	"github.com/strangelove-ventures/noble/testutil/nullify"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDecodeIBCForward(t *testing.T) {
+	recipient := sample.AccAddress()
+
 	for _, tc := range []struct {
 		desc     string
 		msg      []byte
@@ -23,18 +26,13 @@ func TestDecodeIBCForward(t *testing.T) {
 	}{
 		{
 			desc: "Happy path",
-			msg: marshalIBCForwardMetadata(&types.IBCForwardMetadata{
-				Port:                 "1",
-				Channel:              "2",
-				DestinationReceiver:  "3",
-				Memo:                 "4",
-				TimeoutInNanoseconds: 0,
-			}),
+			msg:  createMockMetadata(42, "channel-0", sdk.Bech32PrefixAccAddr, recipient, "Hello, World!"),
 			expected: types.IBCForwardMetadata{
-				Port:                 "1",
-				Channel:              "2",
-				DestinationReceiver:  "3",
-				Memo:                 "4",
+				Nonce:                42,
+				Port:                 "transfer",
+				Channel:              "channel-0",
+				DestinationReceiver:  recipient,
+				Memo:                 "Hello, World!",
 				TimeoutInNanoseconds: 0,
 			},
 		},
@@ -45,7 +43,7 @@ func TestDecodeIBCForward(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			result, err := keeper.DecodeIBCForward(tc.msg)
+			result, err := new(types.IBCForwardMetadata).Parse(tc.msg)
 			if tc.err != nil {
 				require.ErrorIs(t, err, tc.err)
 			} else {
@@ -120,7 +118,27 @@ func uint256ToBytes(value *big.Int) []byte {
 	return arr
 }
 
-func marshalIBCForwardMetadata(forward *types.IBCForwardMetadata) []byte {
-	res, _ := proto.Marshal(forward)
-	return res
+func createMockMetadata(nonce uint64, channel string, prefix string, recipient string, memo string) (res []byte) {
+	nonceBz := make([]byte, 8)
+	binary.BigEndian.PutUint64(nonceBz, nonce)
+
+	channelBz := make([]byte, 8)
+	rawChannel, _ := channelTypes.ParseChannelSequence(channel)
+	binary.BigEndian.PutUint64(channelBz, rawChannel)
+
+	prefixBz := make([]byte, 32)
+	rawPrefix := []byte(prefix)
+	copy(prefixBz[32-len(rawPrefix):], rawPrefix)
+
+	recipientBz := make([]byte, 32)
+	rawRecipient, _ := sdk.GetFromBech32(recipient, prefix)
+	copy(recipientBz[32-len(rawRecipient):], rawRecipient)
+
+	res = append(res, nonceBz...)
+	res = append(res, make([]byte, 32)...) // sender
+	res = append(res, channelBz...)
+	res = append(res, prefixBz...)
+	res = append(res, recipientBz...)
+	res = append(res, []byte(memo)...)
+	return
 }

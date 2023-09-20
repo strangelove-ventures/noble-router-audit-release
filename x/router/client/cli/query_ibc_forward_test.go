@@ -18,18 +18,20 @@ import (
 	"github.com/strangelove-ventures/noble/x/router/types"
 )
 
-func networkWithIBCForwardObjects(t *testing.T, n int) (*network.Network, []types.StoreIBCForwardMetadata) {
+func networkWithIBCForwardObjects(t *testing.T, n uint32) (*network.Network, []types.StoreIBCForwardMetadata) {
 	t.Helper()
 	cfg := network.DefaultConfig()
 	state := types.GenesisState{}
 	require.NoError(t, cfg.Codec.UnmarshalJSON(cfg.GenesisState[types.ModuleName], &state))
 
-	for i := 0; i < n; i++ {
+	for i := uint32(0); i < n; i++ {
 		IBCForward := types.StoreIBCForwardMetadata{
-			SourceDomain:       uint32(i),
-			SourceDomainSender: strconv.Itoa(i),
+			SourceDomain: i,
 			Metadata: &types.IBCForwardMetadata{
-				Nonce: uint64(i),
+				Nonce:               uint64(i),
+				DestinationReceiver: "1234",
+				Channel:             "channel-1",
+				Port:                "port-1",
 			},
 		}
 		nullify.Fill(&IBCForward)
@@ -49,36 +51,32 @@ func TestShowIBCForward(t *testing.T) {
 		fmt.Sprintf("--%s=json", tmcli.OutputFlag),
 	}
 	for _, tc := range []struct {
-		desc               string
-		sourceDomain       uint32
-		sourceDomainSender string
-		nonce              string
+		desc         string
+		sourceDomain uint32
+		nonce        string
 
 		args []string
 		err  error
 		obj  types.StoreIBCForwardMetadata
 	}{
 		{
-			desc:               "found",
-			sourceDomain:       objs[0].SourceDomain,
-			sourceDomainSender: objs[0].SourceDomainSender,
-			nonce:              strconv.Itoa(int(objs[0].Metadata.Nonce)),
-			args:               common,
-			obj:                objs[0],
+			desc:         "found",
+			sourceDomain: objs[0].SourceDomain,
+			nonce:        strconv.Itoa(int(objs[0].Metadata.Nonce)),
+			args:         common,
+			obj:          objs[0],
 		},
 		{
-			desc:               "not found",
-			sourceDomain:       uint32(14),
-			sourceDomainSender: "123",
-			nonce:              "456",
-			args:               common,
-			err:                status.Error(codes.NotFound, "not found"),
+			desc:         "not found",
+			sourceDomain: uint32(14),
+			nonce:        "456",
+			args:         common,
+			err:          status.Error(codes.NotFound, "not found"),
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			args := []string{
 				strconv.Itoa(int(tc.sourceDomain)),
-				tc.sourceDomainSender,
 				tc.nonce,
 			}
 			args = append(args, tc.args...)

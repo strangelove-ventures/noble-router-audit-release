@@ -1,17 +1,18 @@
 package types
 
 import (
+	"bytes"
 	"fmt"
 
-	"github.com/circlefin/noble-cctp-router-private/x/cctp/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	host "github.com/cosmos/ibc-go/v3/modules/core/24-host"
+	"github.com/strangelove-ventures/noble/x/cctp/types"
 )
 
 // Validate ensures that the fields are populated with data that is semantically correct.
 func (m *Mint) Validate() error {
-	if m.SourceDomainSender == "" {
+	if len(m.SourceDomainSender) != 32 || bytes.Equal(m.SourceDomainSender, make([]byte, 32)) {
 		return sdkerrors.Wrap(ErrInvalidMint, "the source domain sender cannot be an empty string")
 	}
 
@@ -36,10 +37,6 @@ func (m *Mint) Validate() error {
 
 // Validate ensures that the fields are populated with data that is semantically correct.
 func (i *InFlightPacket) Validate() error {
-	if i.SourceDomainSender == "" {
-		return sdkerrors.Wrap(ErrInvalidInFlightPacket, "the source domain sender cannot be an empty string")
-	}
-
 	if err := host.ChannelIdentifierValidator(i.Channel); err != nil {
 		return sdkerrors.Wrapf(ErrInvalidInFlightPacket, "invalid channel identifier: %s", err)
 	}
@@ -53,10 +50,6 @@ func (i *InFlightPacket) Validate() error {
 
 // Validate ensures that the fields are populated with data that is semantically correct.
 func (i *StoreIBCForwardMetadata) Validate() error {
-	if i.SourceDomainSender == "" {
-		return sdkerrors.Wrap(ErrInvalidStoreForwardMetadata, "the source domain sender cannot be an empty string")
-	}
-
 	if err := i.Metadata.Validate(); err != nil {
 		return sdkerrors.Wrap(ErrInvalidStoreForwardMetadata, err.Error())
 	}

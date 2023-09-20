@@ -26,6 +26,8 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	cmd.AddCommand(CmdShowInFlightPacket())
 	cmd.AddCommand(CmdListMints())
 	cmd.AddCommand(CmdShowMint())
+	cmd.AddCommand(CmdListAllowedSourceDomainSenders())
+	cmd.AddCommand(CmdShowAllowedSourceDomainSender())
 
 	return cmd
 }

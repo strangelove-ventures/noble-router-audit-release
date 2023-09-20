@@ -41,15 +41,15 @@ func (im IBCMiddleware) OnAcknowledgementPacket(
 		}
 
 		if ack.Success() {
-			im.keeper.DeleteMint(ctx, inFlightPacket.SourceDomain, inFlightPacket.SourceDomainSender, inFlightPacket.Nonce)
-			im.keeper.DeleteIBCForward(ctx, inFlightPacket.SourceDomain, inFlightPacket.SourceDomainSender, inFlightPacket.Nonce)
+			im.keeper.DeleteMint(ctx, inFlightPacket.SourceDomain, inFlightPacket.Nonce)
+			im.keeper.DeleteIBCForward(ctx, inFlightPacket.SourceDomain, inFlightPacket.Nonce)
 			im.keeper.DeleteInFlightPacket(ctx, packet.SourceChannel, packet.SourcePort, packet.Sequence)
 
 		} else { // error on destination
 			im.keeper.DeleteInFlightPacket(ctx, packet.SourceChannel, packet.SourcePort, packet.Sequence)
 
 			// keep mint and mark IBCForward to indicate ack error for retry for future replaceDepositForBurnWithMetadata
-			if existingIBCForward, found := im.keeper.GetIBCForward(ctx, inFlightPacket.SourceDomain, inFlightPacket.SourceDomainSender, inFlightPacket.Nonce); found {
+			if existingIBCForward, found := im.keeper.GetIBCForward(ctx, inFlightPacket.SourceDomain, inFlightPacket.Nonce); found {
 				existingIBCForward.AckError = true
 				im.keeper.SetIBCForward(ctx, existingIBCForward)
 			}
@@ -79,16 +79,16 @@ func (im IBCMiddleware) OnTimeoutPacket(ctx sdk.Context, packet channeltypes.Pac
 			return err
 		}
 
-		existingIBCForward, found := im.keeper.GetIBCForward(ctx, inFlightPacket.SourceDomain, inFlightPacket.SourceDomainSender, inFlightPacket.Nonce)
+		existingIBCForward, found := im.keeper.GetIBCForward(ctx, inFlightPacket.SourceDomain, inFlightPacket.Nonce)
 		if !found {
 			panic("no existing ibc forward metadata in store for in flight packet")
 		}
 
-		existingMint, found := im.keeper.GetMint(ctx, inFlightPacket.SourceDomain, inFlightPacket.SourceDomainSender, inFlightPacket.Nonce)
+		existingMint, found := im.keeper.GetMint(ctx, inFlightPacket.SourceDomain, inFlightPacket.Nonce)
 		if !found {
 			panic("no existing mint in store for in flight packet")
 		}
-		return im.keeper.ForwardPacket(ctx, *existingIBCForward.Metadata, existingMint)
+		return im.keeper.ForwardPacket(ctx, existingIBCForward.Metadata, existingMint)
 	}
 
 	return im.app.OnTimeoutPacket(ctx, packet, relayer)

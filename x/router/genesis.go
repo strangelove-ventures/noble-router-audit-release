@@ -10,7 +10,6 @@ import (
 
 // InitGenesis initializes the module's state from a provided genesis state.
 func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState) {
-
 	for _, elem := range genState.InFlightPackets {
 		k.SetInFlightPacket(ctx, elem)
 	}
@@ -24,6 +23,12 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genState types.GenesisState)
 	}
 
 	k.SetParams(ctx, genState.Params)
+
+	for _, elem := range genState.AllowedSourceDomainSenders {
+		k.AddAllowedSourceDomainSender(ctx, elem.DomainId, elem.Address)
+	}
+
+	k.SetOwner(ctx, genState.Owner)
 }
 
 // ExportGenesis returns the module's exported GenesisState
@@ -34,6 +39,8 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
 	genesis.InFlightPackets = k.GetAllInFlightPackets(ctx)
 	genesis.Mints = k.GetAllMints(ctx)
 	genesis.IbcForwards = k.GetAllIBCForwards(ctx)
+	genesis.Owner = k.GetOwner(ctx)
+	genesis.AllowedSourceDomainSenders = k.GetAllowedSourceDomainSenders(ctx)
 
 	return genesis
 }

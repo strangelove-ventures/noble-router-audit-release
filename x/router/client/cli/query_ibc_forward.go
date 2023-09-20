@@ -46,9 +46,9 @@ func CmdListIBCForwards() *cobra.Command {
 
 func CmdShowIBCForward() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show-ibc-forward [source-domain] [source-domain-sender] [nonce]",
+		Use:   "show-ibc-forward [source-domain] [nonce]",
 		Short: "shows an IBC forward",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 
@@ -58,16 +58,14 @@ func CmdShowIBCForward() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			sourceDomainSender := args[1]
-			nonce, err := strconv.ParseUint(args[2], 10, 64)
+			nonce, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return err
 			}
 
 			params := &types.QueryGetIBCForwardRequest{
-				SourceDomain:       uint32(sourceDomain),
-				SourceDomainSender: sourceDomainSender,
-				Nonce:              nonce,
+				SourceDomain: uint32(sourceDomain),
+				Nonce:        nonce,
 			}
 
 			res, err := queryClient.IBCForward(context.Background(), params)

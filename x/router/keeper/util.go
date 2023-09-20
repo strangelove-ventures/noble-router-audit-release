@@ -2,10 +2,6 @@ package keeper
 
 import (
 	"math/big"
-
-	sdkerrors "cosmossdk.io/errors"
-	"github.com/gogo/protobuf/proto"
-	"github.com/strangelove-ventures/noble/x/router/types"
 )
 
 type BurnMessage struct {
@@ -52,19 +48,6 @@ const (
 
 	Bytes32Len = 32
 )
-
-func DecodeIBCForward(msg []byte) (types.IBCForwardMetadata, error) {
-	var res types.IBCForwardMetadata
-	if err := proto.Unmarshal(msg, &res); err != nil {
-		return types.IBCForwardMetadata{}, sdkerrors.Wrap(types.ErrDecodingIBCForward, err.Error())
-	}
-
-	if err := res.Validate(); err != nil {
-		return types.IBCForwardMetadata{}, sdkerrors.Wrap(types.ErrDecodingIBCForward, err.Error())
-	}
-
-	return res, nil
-}
 
 func bytesToBigInt(data []byte) big.Int {
 	value := big.Int{}

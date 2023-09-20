@@ -18,7 +18,6 @@ var _ = strconv.IntSize
 func createNInFlightPacket(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.InFlightPacket {
 	items := make([]types.InFlightPacket, n)
 	for i := range items {
-		items[i].SourceDomainSender = strconv.Itoa(i)
 		items[i].Nonce = uint64(i)
 		items[i].Channel = strconv.Itoa(i)
 		items[i].Port = strconv.Itoa(i)

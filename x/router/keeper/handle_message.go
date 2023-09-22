@@ -38,17 +38,16 @@ func (k *Keeper) HandleMessage(ctx sdk.Context, msg []byte) error {
 		}
 
 		// message is a Mint
+		coin := sdk.NewCoin(tokenPair.LocalToken, sdk.NewIntFromBigInt(burnMessage.Amount.BigInt()))
+
 		mint := types.Mint{
 			SourceDomain:       outerMessage.SourceDomain,
 			SourceDomainSender: outerMessage.Sender,
 			Nonce:              outerMessage.Nonce,
-			Amount: &sdk.Coin{
-				Denom:  tokenPair.LocalToken,
-				Amount: sdk.NewIntFromBigInt(burnMessage.Amount.BigInt()),
-			},
-			DestinationDomain: outerMessage.DestinationDomain,
-			MintRecipient:     addr,
-			Height:            uint64(ctx.BlockHeight()),
+			Amount:             &coin,
+			DestinationDomain:  outerMessage.DestinationDomain,
+			MintRecipient:      addr,
+			Height:             uint64(ctx.BlockHeight()),
 		}
 		k.SetMint(ctx, mint)
 		if existingIBCForward, found := k.GetIBCForward(ctx, outerMessage.SourceDomain, outerMessage.Nonce); found {

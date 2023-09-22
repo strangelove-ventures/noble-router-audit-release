@@ -2,14 +2,13 @@ package cli_test
 
 import (
 	"fmt"
-	"strconv"
-	"testing"
-
 	clitestutil "github.com/cosmos/cosmos-sdk/testutil/cli"
 	"github.com/strangelove-ventures/noble/x/router/client/cli"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strconv"
+	"testing"
 
 	"github.com/stretchr/testify/require"
 

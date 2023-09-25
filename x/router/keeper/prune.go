@@ -10,7 +10,9 @@ func (k *Keeper) Prune(ctx sdk.Context) {
 
 	for _, mint := range mints {
 		if uint64(height)-mint.Height > params.MintPruneBlocks {
-			k.DeleteMint(ctx, mint.SourceDomain, mint.Nonce)
+			if _, found := k.GetIBCForward(ctx, mint.SourceDomain, mint.Nonce); !found {
+				k.DeleteMint(ctx, mint.SourceDomain, mint.Nonce)
+			}
 		}
 	}
 }
